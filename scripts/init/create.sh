@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # HOST. Tworzy kontener ros2 (Ubuntu 24.04) i instaluje w nim ROS 2 Jazzy.
-# Idempotentny. Cofa: ros2-create-revert.sh
+# Idempotentny. Cofa: create-revert.sh
 set -euo pipefail
 
 CONTAINER=ros2
@@ -16,7 +16,7 @@ else
 fi
 
 echo "-> provisioning wewnątrz kontenera (może potrwać kwadrans)"
-distrobox enter "$CONTAINER" -- bash "$HERE/ros2-provision.sh"
+distrobox enter "$CONTAINER" -- bash "$HERE/provision.sh"
 
 echo
-echo "Gotowe. Wejście:  $HERE/ros2-enter.sh"
+echo "Gotowe. Wejście:  $HERE/../ros2/enter.sh"

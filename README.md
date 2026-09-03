@@ -5,35 +5,50 @@ Nauka robotyki przez jeden projekt na raz. Wszystko, co dotyczy ROS-a,
 
 ## Start
 
-    scripts/install-distrobox.sh   raz na maszynę
-    scripts/ros2-create.sh         raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
-    scripts/ros2-enter.sh          codziennie: wejście do środowiska
-    scripts/ros2-build.sh          budowa ws/ (colcon)
+    scripts/init/install-distrobox.sh   raz na maszynę
+    scripts/init/create.sh              raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
+    scripts/ros2/enter.sh               codziennie: wejście do środowiska
+    scripts/init/build.sh               budowa ws/ (colcon)
 
-## Skrypty
+## scripts/init — zmieniają maszynę, każdy ma revert
 
 | skrypt | co robi | co po nim zostaje | cofa |
 |---|---|---|---|
 | `install-distrobox.sh` | `dnf install distrobox` | pakiet na Fedorze | `install-distrobox-revert.sh` |
-| `ros2-create.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `ros2-create-revert.sh` |
-| `ros2-provision.sh` | wnętrze kontenera (wołane przez `ros2-create.sh`) | tylko w kontenerze | — (ginie z kontenerem) |
-| `ros2-enter.sh` | wejście do środowiska | nic | — |
-| `ros2-build.sh` | `colcon build` | `ws/{build,install,log}` w repo | `ros2-build-revert.sh` |
+| `create.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `create-revert.sh` |
+| `provision.sh` | wnętrze kontenera (wołane przez `create.sh`) | tylko w kontenerze | — (ginie z kontenerem) |
+| `build.sh` | `colcon build` | `ws/{build,install,log}` w repo | `build-revert.sh` |
 
 Pełne wycofanie, w tej kolejności:
 
-    scripts/ros2-build-revert.sh
-    scripts/ros2-create-revert.sh
-    scripts/install-distrobox-revert.sh
+    scripts/init/build-revert.sh
+    scripts/init/create-revert.sh
+    scripts/init/install-distrobox-revert.sh
     rm -rf ~/repos/robotics
 
-Zasada, którą to realizuje — patrz AGENTS.md.
+## scripts/ros2 — oglądanie żywego systemu, nic nie zmieniają
+
+Odpowiadają na cztery pytania o działającą sieć ROS-a, bez zaglądania
+w kod węzłów. `-h` w każdym z nich opisuje parametry.
+
+| pytanie | skrypt | argumenty |
+|---|---|---|
+| wejście do środowiska | `enter.sh` | — |
+| co działa | `nodes.sh` | `[WĘZEŁ]` — bez argumentu lista, z argumentem szczegóły |
+| jakie kanały | `topics.sh` | `[--no-types]` |
+| kto nadaje, kto słucha | `who.sh` | `TOPIC` |
+| co leci | `echo.sh` | `TOPIC [--once] [--field POLE] [--no-arr]` |
+| jak szybko leci | `hz.sh` | `TOPIC [--window N]` |
+
+Kolejność przy debugowaniu: `nodes` → `topics` → `who` → `echo`/`hz`.
+Nazwy kanałów podaje się ze slashem, np. `/chatter`.
 
 ## Układ
 
     ws/src/          pakiety ROS — wszystko, co musi być pakietem, idzie tu
     projects/<nazwa> notatki, analiza offline i dane danego projektu
-    scripts/         obsługa środowiska TEGO repo
+    scripts/init/    stawianie i rozbieranie środowiska
+    scripts/ros2/    codzienna praca z żywym systemem
                      (skrypty maszynowe są w ~/scripts, nie tu)
 
 Jeden colcon workspace na całe repo. Kolejny projekt = kolejny pakiet
