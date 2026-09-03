@@ -1,0 +1,14 @@
+# colcon
+ws/build/
+ws/install/
+ws/log/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# dane z przebiegów — duże i odtwarzalne, trzymane poza gitem
+**/bags/
+*.db3
+*.mcap
