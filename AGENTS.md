@@ -28,7 +28,11 @@ Reverty są idempotentne i mówią, czego nie ruszyły.
 
     ws/src/            pakiety ROS — wszystko, co MUSI być pakietem
     projects/<nazwa>/  notatki, analiza offline, dane danego projektu
-    scripts/           środowisko tego repo
+    scripts/init/      stawianie i rozbieranie środowiska (każdy z revertem)
+    scripts/ros2/      oglądanie żywego systemu (bez skutków ubocznych)
+
+Podział `scripts/` jest jednocześnie deklaracją: co leży w `init/`, zmienia
+maszynę i musi mieć bliźniaka `-revert.sh`; co leży w `ros2/`, tylko czyta.
 
 Jeden colcon workspace na całe repo. Kolejny projekt to kolejny pakiet
 w `ws/src/` plus katalog w `projects/`, nie nowe repo.
