@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# colcon build workspace'u repo, z hosta, bez wchodzenia do kontenera.
+# HOST. colcon build workspace'u repo, bez wchodzenia do kontenera.
+# Pisze tylko w repo (ws/build, ws/install, ws/log). Cofa: ros2-build-revert.sh
 set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-exec distrobox enter ros2 -- bash -lc \
-  "cd '$REPO/ws' && colcon build --symlink-install"
+exec distrobox enter ros2 -- bash -lc "cd '$REPO/ws' && colcon build --symlink-install"
