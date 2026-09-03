@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Uruchamiane WEWNĄTRZ kontenera przez ros2-init.sh.
-# Wszystko, co tu robimy, żyje w kontenerze — poza jednym wyjątkiem:
-# katalog domowy jest współdzielony z hostem, więc nie dotykamy ~/.bashrc.
-# Sourcing ROS-a idzie do /etc/profile.d/, czyli do systemu plików kontenera.
+# WEWNĄTRZ KONTENERA. Wołane przez ros2-create.sh — nie uruchamiaj z hosta.
+# Nie wymaga własnego revertu: wszystko poza /etc/profile.d/ros2.sh żyje
+# w kontenerze i ginie razem z nim. Dlatego NIE piszemy do ~/.bashrc —
+# katalog domowy jest współdzielony z Fedorą.
 set -euo pipefail
 
 if ! dpkg -s ros-jazzy-desktop >/dev/null 2>&1; then
