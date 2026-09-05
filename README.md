@@ -1,117 +1,178 @@
 # robotics
 
-Nauka robotyki przez jeden projekt na raz. Wszystko, co dotyczy ROS-a,
-żyje w kontenerze `ros2` (Ubuntu 24.04) — Fedora zostaje czysta.
+Nauka robotyki przez jeden projekt na raz. Wszystko, co dotyczy ROS-a, żyje
+w kontenerze opisanym przez `.devcontainer/` — Fedora zostaje czysta.
 
-**Wszystkie polecenia poniżej odpalasz ze swojego terminala na Fedorze.**
-Skrypty same wchodzą do kontenera; nie musisz nigdzie wchodzić przed nimi.
+---
 
-## Start
+## Pierwszy raz
 
-    scripts/fedora/install-distrobox.sh              raz na maszynę
-    scripts/container/create-container-for-ros2.sh   raz: pusty kontener (sekundy)
-    scripts/container/install-ros2-in-container.sh   raz: ROS 2 Jazzy (~5 GB, kwadrans)
-    scripts/dev/enter-devcontainer.sh             codziennie: wejście do środowiska
-    scripts/dev/build-colcon-workspace.sh            po każdej zmianie w ws/src
+Cztery kroki, każdy wypisuje następny, więc kolejności nie musisz pamiętać.
 
-Każdy z nich kończy się wypisaniem następnego kroku, więc kolejności nie
-trzeba pamiętać — wystarczy czytać, co mówi ostatni uruchomiony.
+    scripts/fedora/install-devcontainer-cli.sh    devcontainer CLI (npm, globalnie)
+    scripts/container/create-devcontainer.sh      obraz + kontener (~7 GB, kilka minut)
+    code ~/repos/robotics                         → Reopen in Container
+    scripts/dev/build-colcon-workspace.sh         pierwszy build
 
-## Podział scripts/
+Sprawdzenie, że działa: w `ws/src/<pakiet>/…` import `rclpy` nie jest czerwony,
+a `scripts/dev/ros2/list-topics.sh` z Fedory wypisuje `/rosout`.
 
-Katalog mówi, **czego dotyczy** skrypt, a nie jak bardzo jest zaawansowany:
+---
 
-| katalog | czego dotyczy | jak często |
+## Dwa światy i podział pracy
+
+To jest najważniejsza rzecz do zrozumienia w tym repo.
+
+| gdzie | co tam robisz | jak wołasz ROS-a |
 |---|---|---|
-| `fedora/` | twoja Fedora | raz na maszynę |
-| `container/` | cykl życia kontenera `ros2`: powstaje, chodzi, stoi, znika | raz, plus stop/status kiedy chcesz |
-| `inside-distrobox/` | kod wykonywany **w środku** kontenera; ścieżka odbija stronę hosta | wołany przez inne skrypty |
-| `dev/` | kod w tym repo | po każdej zmianie w `ws/src` |
-| `ros2/` | żywy system ROS-a | bez końca |
-| `lib/` | wspólny kod — `source`owany, nie uruchamiany | — |
+| **VS Code** (w kontenerze) | piszesz kod, uruchamiasz węzły, debugujesz | wprost: `ros2 run …`, `colcon build` |
+| **Ghostty** (Fedora) | zaglądasz, co robi system; sprzątasz; stawiasz środowisko | przez `scripts/` |
 
-## scripts/fedora — jedyne, co zmienia twój system
+**Skrypty z `scripts/` odpala się wyłącznie z Fedory.** Uruchomione w kontenerze
+odmawiają i mówią, żeby użyć gołej komendy — bo tam opakowanie nie ma sensu.
 
-| skrypt | co robi | co po nim zostaje | cofa |
-|---|---|---|---|
-| `install-distrobox.sh` | `dnf install distrobox` | pakiet na Fedorze | `install-distrobox-revert.sh` |
+Powód takiego podziału: gdy w VS Code masz uruchomiony węzeł, nie chcesz go
+przerywać, żeby sprawdzić, co publikuje. Otwierasz Ghostty i pytasz stamtąd.
 
-## scripts/container — cykl życia kontenera
+---
+
+## Typowa sesja
+
+**1. Piszesz** — w VS Code, w `ws/src/<pakiet>/`.
+
+**2. Budujesz** — w terminalu VS Code:
+
+    colcon build --symlink-install
+
+`--symlink-install` sprawia, że przy zmianach w Pythonie wystarczy restart
+węzła, bez ponownego budowania. Przy C++ i tak musisz przebudować.
+
+**3. Uruchamiasz** — w drugim terminalu VS Code:
+
+    ros2 run <pakiet> <węzeł>
+
+Jeśli dostaniesz „package not found" tuż po pierwszym buildzie — otwórz nowy
+terminal. Stary nie widzi `ws/install/`, bo powstało po jego starcie.
+
+**4. Oglądasz** — z Ghostty, nie ruszając tamtych terminali:
+
+    scripts/dev/ros2/list-running-nodes.sh
+    scripts/dev/ros2/list-topics.sh
+    scripts/dev/ros2/print-topic-messages.sh /vacuum_pressure
+    scripts/dev/ros2/measure-topic-rate.sh /vacuum_pressure
+
+**5. Kończysz** — kontener może chodzić dalej, nic nie kosztuje poza pamięcią.
+Gdy chcesz go uśpić:
+
+    scripts/container/stop-devcontainer.sh
+
+---
+
+## Kiedy przebudować kontener
+
+| zmieniłeś | co zrobić |
+|---|---|
+| kod w `ws/src/` | `colcon build` |
+| `.devcontainer/Containerfile` | **Rebuild Container** w VS Code, albo `create-devcontainer-revert.sh` + `create-devcontainer.sh` |
+| `customizations` w `devcontainer.json` | wystarczy Reopen in Container |
+| nic, a i tak nie działa | `build-colcon-workspace-revert.sh`, potem build od zera |
+
+Nowy pakiet systemowy (apt) **dopisujesz do `Containerfile`**, nie instalujesz
+w działającym kontenerze — inaczej zginie przy następnym odtworzeniu.
+
+---
+
+## Skrypty
+
+Wszystkie mają `-h` z opisem parametrów. Wszystkie odpalasz z Fedory.
+
+### `scripts/fedora/` — twój system, raz w życiu maszyny
 
 | skrypt | co robi | cofa |
 |---|---|---|
-| `create-container-for-ros2.sh` | **pusty** kontener `ros2` (Ubuntu 24.04) | `create-container-for-ros2-revert.sh` |
-| `install-ros2-in-container.sh` | ROS 2 Jazzy + colcon w tym kontenerze | — patrz niżej |
-| `show-devcontainer-status.sh` | czy istnieje, czy chodzi, ile waży — **bez uruchamiania go** | — (nic nie zmienia) |
-| `stop-devcontainer.sh` | zatrzymuje, nic nie kasując; najpierw sprząta osierocone sesje exec | — (`enter` wystartuje go z powrotem) |
+| `install-devcontainer-cli.sh` | `npm i -g @devcontainers/cli` | `install-devcontainer-cli-revert.sh` |
 
-`install-ros2-in-container.sh` jako jedyny tutaj nie ma własnego revertu,
-i to jest celowe: wszystko, co instaluje, żyje w kontenerze i ginie razem
-z nim. Cofa je `create-container-for-ros2-revert.sh`, który przy okazji
-sprząta `~/.ros` i `~/.colcon` ze współdzielonego katalogu domowego.
+### `scripts/container/` — cykl życia kontenera
 
-**Kontener uruchamia się sam.** Nie ma skryptu `start-` i nie jest to
-przeoczenie: `distrobox enter` startuje zatrzymany kontener, zanim do niego
-wejdzie. Startuje go więc ten skrypt, który akurat pierwszy go potrzebuje —
-choćby `list-topics.sh`. Zatrzymanie jest jawne, bo tylko ono wymaga decyzji.
-
-## scripts/inside-distrobox — jedyne, czego nie odpalasz sam
-
-Wszystko inne w tym repo uruchamiasz **z Fedory** — skrypty same wchodzą do
-kontenera i same z niego wychodzą. Tu leży wyjątek: kod, który musi wykonać
-się w środku. Ścieżka odbija miejsce po stronie hosta.
-
-| skrypt | woła go | co robi |
+| skrypt | co robi | cofa |
 |---|---|---|
-| `container/install-ros2-in-container.sh` | `scripts/container/install-ros2-in-container.sh` | instaluje ROS 2 Jazzy + colcon; odmawia startu poza kontenerem |
+| `create-devcontainer.sh` | stawia kontener z `.devcontainer/` | `create-devcontainer-revert.sh` |
+| `show-devcontainer-status.sh` | stan, obraz, sesje — **bez uruchamiania kontenera** | — |
+| `stop-devcontainer.sh` | zatrzymuje, nic nie kasując | — (wejście wystartuje go z powrotem) |
 
-## scripts/lib — wspólny kod, nie polecenia
+`show-devcontainer-status.sh` jest jedynym podglądem, który stanu nie zmienia:
+pyta wyłącznie podmana. Każdy inny skrypt, wchodząc do kontenera, po drodze
+go uruchomi.
 
-`container.sh` trzyma nazwę kontenera, obraz i cztery funkcje, których używa
-reszta skryptów: `require-distrobox-installed`, `require-devcontainer`,
-`run-in-devcontainer "POLECENIE"`, `enter-devcontainer`. Uruchomiona
-wprost odmawia — to biblioteka do `source`owania. Nazwę kontenera zmienia
-się tutaj i tylko tutaj.
+### `scripts/dev/` — codzienna praca
 
-## scripts/dev — codzienna pętla pracy nad kodem
+| skrypt | co robi | cofa |
+|---|---|---|
+| `enter-devcontainer.sh` | oddaje ci powłokę w kontenerze, w katalogu repo | — |
+| `build-colcon-workspace.sh` | `colcon build --symlink-install` bez wchodzenia | `build-colcon-workspace-revert.sh` |
 
-W przeciwieństwie do `init/` odpalane bez końca: po każdej zmianie w `ws/src`.
+### `scripts/dev/ros2/` — oglądanie żywego systemu
 
-| skrypt | co robi | co po nim zostaje | cofa |
-|---|---|---|---|
-| `build-colcon-workspace.sh` | `colcon build --symlink-install` w kontenerze | `ws/{build,install,log}` — tylko w repo, maszyny nie dotyka | `build-colcon-workspace-revert.sh` |
-
-Pełne wycofanie, w tej kolejności:
-
-    scripts/dev/build-colcon-workspace-revert.sh
-    scripts/container/create-container-for-ros2-revert.sh
-    scripts/fedora/install-distrobox-revert.sh
-    rm -rf ~/repos/robotics
-
-## scripts/ros2 — oglądanie żywego systemu, nic nie zmieniają
-
-Odpalasz je **z Fedory** — same wchodzą do kontenera. `-h` w każdym opisuje
-parametry. Czasownik na początku nazwy mówi, czego się spodziewać:
-
-| prefiks | co robi skrypt |
-|---|---|
-| `enter-` | zmienia twoją sesję — zostajesz w środku, aż wyjdziesz |
-| `list-` | wypisuje, co istnieje, i kończy |
-| `show-` | pokazuje szczegóły jednej wskazanej rzeczy i kończy |
-| `print-` | strumień — leci, dopóki nie przerwiesz Ctrl+C |
-| `measure-` | mierzy przez chwilę i podaje liczby — też do Ctrl+C |
+Czasownik w nazwie mówi, **czy polecenie odda ci terminal**: `list-` i `show-`
+kończą się same, `print-` i `measure-` lecą do Ctrl+C.
 
 | pytanie | skrypt | argumenty |
 |---|---|---|
-| jak wejść do środowiska | `enter-devcontainer.sh` | — |
 | co w ogóle działa | `list-running-nodes.sh` | — |
 | co ten węzeł nadaje i czego słucha | `show-node-connections.sh` | `WĘZEŁ`, np. `/talker` |
-| jakie kanały istnieją | `list-topics.sh` | `[--no-types]`, domyślnie z typami |
-| kto nadaje i kto słucha na kanale | `show-topic-connections.sh` | `TOPIC`, np. `/chatter` |
-| co konkretnie tamtędy leci | `print-topic-messages.sh` | `TOPIC [--once] [--field POLE] [--no-arr]` |
+| jakie kanały istnieją | `list-topics.sh` | `[--no-types]` |
+| kto nadaje i kto słucha na kanale | `show-topic-connections.sh` | `TOPIC` |
+| co konkretnie tamtędy leci | `print-topic-messages.sh` | `TOPIC [--once] [--field POLE]` |
 | jak szybko to leci | `measure-topic-rate.sh` | `TOPIC [--window N]` |
 
-Ten sam graf połączeń widać z dwóch stron: `show-node-connections.sh` patrzy
-od strony węzła („co ja nadaję"), `show-topic-connections.sh` od strony kanału
-(„kto mnie zasila"). Przy diagnozie „węzły żyją, a się nie widzą" potrzebne
-są oba.
+Ten sam graf połączeń widać z dwóch stron: `show-node-connections` od strony
+węzła („co ja nadaję"), `show-topic-connections` od strony kanału („kto mnie
+zasila"). Przy diagnozie „węzły żyją, a się nie widzą" potrzebne są oba.
+
+### `scripts/lib/`
+
+`container.sh` — biblioteka, nie polecenie. Trzyma nazwę kontenera, jego
+użytkownika i cztery funkcje wejścia. **Nazwa kontenera musi zgadzać się
+z `--name` w `devcontainer.json`** — to jedyne miejsce, gdzie te dwa światy
+są sprzęgnięte ręcznie.
+
+---
+
+## Gdy coś nie działa
+
+| objaw | przyczyna | co zrobić |
+|---|---|---|
+| `import rclpy` czerwony w VS Code | nie jesteś w kontenerze | Reopen in Container |
+| `ros2: command not found` w Ghostty | to normalne — ROS jest tylko w kontenerze | użyj `scripts/dev/ros2/…` albo `enter-devcontainer.sh` |
+| `package not found` tuż po buildzie | terminal starszy niż `ws/install/` | otwórz nowy terminal |
+| węzły żyją, a się nie widzą | zwykle niedopasowane QoS | `show-topic-connections.sh TOPIC`, porównaj obie strony |
+| pliki w `ws/build` mają złego właściciela | brak `--userns=keep-id` | sprawdź `runArgs` w `devcontainer.json` |
+| skrypt mówi „jesteś wewnątrz kontenera" | odpalasz go z VS Code | użyj gołej komendy `ros2 …` |
+
+---
+
+## Sprzątanie
+
+Pełne wycofanie, w tej kolejności — po nim po projekcie nie zostaje nic:
+
+    scripts/dev/build-colcon-workspace-revert.sh    artefakty budowy w repo
+    scripts/container/create-devcontainer-revert.sh kontener i obrazy (~7 GB)
+    scripts/fedora/install-devcontainer-cli-revert.sh  devcontainer CLI
+    rm -rf ~/repos/robotics
+
+Zasada, na której to stoi: **co skrypt tworzy poza repo, to `-revert.sh` musi
+cofnąć.** Dlatego projekt niczego nie dokłada do `~/.dotfiles` — wszystkie
+zależności instalują się i odinstalowują skryptami stąd.
+
+---
+
+## Układ repo
+
+    .devcontainer/     definicja środowiska (Containerfile + devcontainer.json)
+    ws/src/            pakiety ROS — wszystko, co MUSI być pakietem
+    ws/{build,install,log}   generowane przez colcon, w .gitignore
+    projects/<nazwa>/  notatki, analiza offline, dane — ROS o tym nie wie
+    scripts/           patrz wyżej
+
+Jeden colcon workspace na całe repo. Kolejny projekt to kolejny pakiet
+w `ws/src/` plus katalog w `projects/`, nie nowe repo.
