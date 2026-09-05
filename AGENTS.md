@@ -25,7 +25,8 @@ znaczy, że go nie przeszły.
 Trzy reguły, w tej kolejności:
 
 1. **Rzeczownik, nie czynność.** Nazwa nazywa rzecz, która powstaje:
-   `create-container`, nie `create`. `build-workspace`, nie `build`.
+   `create-container`, nie `create`. `build-colcon-workspace`, nie `build`
+   — bo „workspace" samo w sobie znaczy też VS Code, cargo i npm.
 2. **Miejsce, jeśli jest niejednoznaczne.** Ten sam czasownik znaczy co
    innego na Fedorze i w kontenerze, więc miejsce wchodzi do nazwy:
    `install-ros2-in-container` — bo `install-ros2` na hoście byłoby
@@ -66,12 +67,22 @@ gdy wszystko, co tworzy, ginie razem z kontenerem.
 
     ws/src/                  pakiety ROS — wszystko, co MUSI być pakietem
     projects/<nazwa>/        notatki, analiza offline, dane danego projektu
-    scripts/init/            stawianie i rozbieranie środowiska (każdy z revertem)
+    scripts/init/            jednorazowe postawienie środowiska (każdy z revertem)
     scripts/init/.internal/  wołane przez inne skrypty, nie z ręki
+    scripts/dev/             codzienna pętla pracy nad kodem
     scripts/ros2/            oglądanie żywego systemu (bez skutków ubocznych)
 
-Podział `scripts/` jest jednocześnie deklaracją: co leży w `init/`, zmienia
-maszynę i musi mieć bliźniaka `-revert.sh`; co leży w `ros2/`, tylko czyta.
+Podkatalog `scripts/` dzieli się **częstotliwością i skutkiem**, nie tematem:
+
+- `init/` — raz na maszynę, zmienia Fedorę i podmana. Każdy ma revert.
+- `dev/` — bez końca, po każdej zmianie w `ws/src`. Pisze wyłącznie w repo,
+  więc revert kasuje artefakty budowy, a nie odinstalowuje cokolwiek.
+- `ros2/` — bez końca, nie zmienia niczego. Dlatego jako jedyny nie ma
+  revertów i to jest sygnał, nie przeoczenie.
+
+Nazwy katalogów pilnują też cudzych znaczeń: `dev/`, a nie `control/`,
+bo „control" w robotyce to warstwa sterowania (`ros2_control`, regulatory)
+i taki katalog czytałoby się jako sterowniki napędów.
 
 Jeden colcon workspace na całe repo. Kolejny projekt to kolejny pakiet
 w `ws/src/` plus katalog w `projects/`, nie nowe repo.
