@@ -8,12 +8,13 @@ Nauka robotyki przez jeden projekt na raz. Wszystko, co dotyczy ROS-a,
     scripts/init/install-distrobox.sh          raz na maszynę
     scripts/init/create-container-for-ros2.sh  raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
     scripts/ros2/enter.sh                      codziennie: wejście do środowiska
-    scripts/init/build-workspace.sh            po każdej zmianie w ws/src
+    scripts/dev/build-colcon-workspace.sh            po każdej zmianie w ws/src
 
-## scripts/init — zmieniają maszynę, każdy ma revert
+## scripts/init — jednorazowe postawienie środowiska
 
-Kolejność uruchamiania jest kolejnością tabeli. Nazwa każdego skryptu mówi,
-co on **tworzy**: distroboxa, kontener, ROS-a w kontenerze, workspace.
+Odpalane raz na maszynę. Kolejność uruchamiania jest kolejnością tabeli.
+Nazwa każdego skryptu mówi, co on **tworzy**: distroboxa, kontener, ROS-a
+w kontenerze.
 
 Skrypty w `init/.internal/` odpala inny skrypt, nie ty. Kropka w nazwie
 katalogu jest po to, żeby nie wpadały pod rękę przy dopełnianiu ścieżek.
@@ -23,11 +24,18 @@ katalogu jest po to, żeby nie wpadały pod rękę przy dopełnianiu ścieżek.
 | `install-distrobox.sh` | `dnf install distrobox` | pakiet na Fedorze | `install-distrobox-revert.sh` |
 | `create-container-for-ros2.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `create-container-for-ros2-revert.sh` |
 | `.internal/install-ros2-in-container.sh` | ROS 2 Jazzy + colcon **wewnątrz kontenera** — woła go `create-container-for-ros2.sh`, nie uruchamiaj z hosta | tylko w kontenerze | — (ginie z kontenerem) |
-| `build-workspace.sh` | `colcon build` | `ws/{build,install,log}` w repo | `build-workspace-revert.sh` |
+
+## scripts/dev — codzienna pętla pracy nad kodem
+
+W przeciwieństwie do `init/` odpalane bez końca: po każdej zmianie w `ws/src`.
+
+| skrypt | co robi | co po nim zostaje | cofa |
+|---|---|---|---|
+| `build-colcon-workspace.sh` | `colcon build --symlink-install` w kontenerze | `ws/{build,install,log}` — tylko w repo, maszyny nie dotyka | `build-colcon-workspace-revert.sh` |
 
 Pełne wycofanie, w tej kolejności:
 
-    scripts/init/build-workspace-revert.sh
+    scripts/dev/build-colcon-workspace-revert.sh
     scripts/init/create-container-for-ros2-revert.sh
     scripts/init/install-distrobox-revert.sh
     rm -rf ~/repos/robotics
