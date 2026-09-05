@@ -10,6 +10,6 @@ cat <<'NEXT'
 
 Dalej:
 
-  scripts/ros2/enter-ros2-container.sh   a w środku:  ros2 run <pakiet> <węzeł>
-  scripts/ros2/list-running-nodes.sh     podgląd z Fedory, gdy już chodzi
+  scripts/dev/ros2/enter-ros2-container.sh   a w środku:  ros2 run <pakiet> <węzeł>
+  scripts/dev/ros2/list-running-nodes.sh     podgląd z Fedory, gdy już chodzi
 NEXT

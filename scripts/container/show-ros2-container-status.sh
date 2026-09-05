@@ -2,7 +2,7 @@
 # STAN KONTENERA — czy istnieje, czy chodzi, ile zajmuje.
 #
 # Co realnie robi: pyta wyłącznie podmana. NIE wchodzi do kontenera i przez
-# to go nie uruchamia — w przeciwieństwie do wszystkiego w scripts/ros2/.
+# to go nie uruchamia — w przeciwieństwie do wszystkiego w scripts/dev/ros2/.
 # To jedyny sposób sprawdzenia stanu, który sam go nie zmienia.
 set -euo pipefail
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"

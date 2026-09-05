@@ -21,6 +21,6 @@ Dalej:
   scripts/container/install-ros2-in-container.sh   ROS 2 Jazzy + colcon
                                                   (~5 GB, kwadrans — raz)
 
-  scripts/ros2/enter-ros2-container.sh            wejście do środowiska
+  scripts/dev/ros2/enter-ros2-container.sh            wejście do środowiska
                                                   (codziennie, po instalacji)
 NEXT

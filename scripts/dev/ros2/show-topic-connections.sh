@@ -10,14 +10,14 @@
 #   QoS                    gdy oba węzły żyją, a mimo to się nie widzą,
 #                          zwykle winne jest niedopasowane QoS (typowo przy kamerach)
 set -euo pipefail
-. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/container.sh"
 
 usage() {
   cat <<'U'
 użycie: show-topic-connections.sh TOPIC
 
   TOPIC   pełna nazwa kanału ze slashem, np. /chatter
-          listę masz z: scripts/ros2/list-topics.sh
+          listę masz z: scripts/dev/ros2/list-topics.sh
 
 przykład:
   show-topic-connections.sh /chatter

@@ -10,7 +10,7 @@
 #
 # Ctrl+C kończy.
 set -euo pipefail
-. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/container.sh"
 
 usage() {
   cat <<'U'
