@@ -142,6 +142,10 @@ rozjeżdża się po zmianie nazw, bo widać ją przy pierwszym uruchomieniu.
 ## Granice
 
 - `~/scripts` — maszyna (przeżywa projekty). `repo/scripts` — projekt.
+  Test: czy przyda się w NASTĘPNYM projekcie? VS Code i rozszerzenie
+  Dev Containers — tak, więc siedzą w `~/scripts/fedora/init/install-vsc.sh`.
+  `devcontainer` CLI i obraz z ROS-em — nie, więc są tutaj. Konsekwencja:
+  reverty tego repo nie usuwają narzędzi maszyny i nie powinny próbować.
 - Kontener `ros2` jest granicą czystości: ROS, apt i wszystkie
   nieprzewidziane zależności żyją w nim, nie na Fedorze.
 - Katalog domowy jest z kontenerem **współdzielony**. Nic z kontenera nie
