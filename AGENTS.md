@@ -6,7 +6,7 @@
 
 Skrypt, który zmienia coś na maszynie — instaluje pakiet, tworzy kontener,
 zapisuje plik w `$HOME` — ma bliźniaka z sufiksem `-revert.sh`, który
-przywraca stan sprzed. Skrypt bez skutków ubocznych (`scripts/dev/ros2/enter-ros2-container.sh`)
+przywraca stan sprzed. Skrypt bez skutków ubocznych (`scripts/dev/enter-devcontainer.sh`)
 bliźniaka nie ma i to jest sygnał, że nic po sobie nie zostawia.
 
 Konsekwencja: projekt nie dokłada się do `~/.dotfiles`. Wszystkie jego
@@ -28,7 +28,7 @@ musisz pamiętać, gdzie jesteś, ani czy dana sesja miała zrobiony `source`.
 Skrypt albo działa, albo mówi, czego brakuje — nigdy nie robi czegoś innego
 dlatego, że uruchomiłeś go z innego miejsca.
 
-`scripts/dev/ros2/enter-ros2-container.sh` nie jest wyjątkiem, tylko jedynym
+`scripts/dev/enter-devcontainer.sh` nie jest wyjątkiem, tylko jedynym
 skryptem, którego *celem* jest zostawić cię w środku. Reszta wchodzi
 i wychodzi niezauważalnie.
 
@@ -40,21 +40,21 @@ część siedzi w `scripts/lib/container.sh` — **bibliotece, nie poleceniu**:
 `source`ują ją inne skrypty, a uruchomiona wprost odmawia i mówi dlaczego.
 
     require-distrobox-installed        przerywa, gdy nie ma distroboxa
-    require-ros2-container             przerywa, gdy nie ma kontenera
-    run-in-ros2-container "POLECENIE"  wykonaj w kontenerze
-    enter-ros2-container               zostań w kontenerze
+    require-devcontainer             przerywa, gdy nie ma kontenera
+    run-in-devcontainer "POLECENIE"  wykonaj w kontenerze
+    enter-devcontainer               zostań w kontenerze
 
 Nazwy mówią `ros2-container`, a nie `distrobox`, bo distrobox jest szczegółem
 implementacji — gdyby kiedyś zamienić go na gołe `podman exec`, te nazwy
 zostaną prawdziwe. Nazwa `require-distrobox-installed` jest wyjątkiem
 świadomym: ona dotyczy właśnie narzędzia, nie kontenera.
 
-Różnica między dwiema funkcjami wchodzącymi jest celowa. `run-in-ros2-container`
+Różnica między dwiema funkcjami wchodzącymi jest celowa. `run-in-devcontainer`
 **nie** używa `exec` — wykonuje polecenie i wraca, więc skrypt może po nim
 wypisać następny krok. Kod wyjścia dochodzi normalnie: przy `set -e` błąd
 w kontenerze kończy skrypt tym samym kodem (sprawdzone: `exit 42` w kontenerze
 daje 42 na Fedorze), więc podpowiedź „Dalej" nie pojawi się po niepowodzeniu.
-`enter-ros2-container` używa `exec`, bo to przekazanie powłoki, a nie
+`enter-devcontainer` używa `exec`, bo to przekazanie powłoki, a nie
 wywołanie polecenia — nic po nim nie ma się wykonać.
 
 Pierwsza wersja helpera miała `exec` w obu i przez to **dwa skrypty musiały
@@ -203,7 +203,7 @@ i taki katalog czytałoby się jako sterowniki napędów.
 sam uruchamia zatrzymany kontener. Skutek uboczny wart zapamiętania: nawet
 `scripts/dev/ros2/list-topics.sh`, opisany jako „tylko czyta", potrafi wystartować
 kontener i wypisać przy tym ścianę logów distroboxa. Jedyny sposób sprawdzenia
-stanu bez zmieniania go to `container/show-ros2-container-status.sh`, który
+stanu bez zmieniania go to `container/show-devcontainer-status.sh`, który
 pyta wyłącznie podmana. Zatrzymanie jest jawne, bo tylko ono wymaga decyzji.
 
 Jeden colcon workspace na całe repo. Kolejny projekt to kolejny pakiet

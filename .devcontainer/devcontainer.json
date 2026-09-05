@@ -1,0 +1,73 @@
+// Definicja środowiska tego repo. Czyta ją rozszerzenie Dev Containers
+// w VS Code ORAZ `devcontainer` CLI — dlatego środowisko da się postawić
+// zarówno klikając, jak i skryptem, i wychodzi to samo.
+{
+  "name": "robotics-ros2",
+
+  // Środowisko jest OPISANE (Containerfile), nie odtwarzane skryptem.
+  // Baza to gotowy obraz OSRF z ROS 2 Jazzy i colconem; Containerfile
+  // dokłada tylko to, czego brakuje. Tam dopisujesz pakiety apt.
+  "build": { "dockerfile": "Containerfile" },
+
+  "runArgs": [
+    // Przypięta nazwa kontenera. To jest klucz do całej reszty: skrypty
+    // z Fedory wołają `podman exec robotics-ros2`, a bez tego podman
+    // nadałby nazwę losową i nie dałoby się w nią celować.
+    "--name=robotics-ros2",
+
+    // DDS (transport ROS-a) wykrywa węzły rozgłoszeniowo i intensywnie
+    // używa pamięci dzielonej. Bez tych dwóch flag węzły w kontenerze
+    // potrafią się nawzajem nie widzieć albo działać wolno.
+    "--network=host",
+    "--ipc=host",
+
+    // KLUCZOWE przy podmanie rootless, inaczej niż w dockerze:
+    // domyślnie UID 1000 w kontenerze mapuje się na subuid hosta, więc
+    // kontener NIE MOŻE pisać do zamontowanego repo (sprawdzone — zapis
+    // po prostu nie przechodzi). keep-id mapuje twój UID 1:1, dzięki czemu
+    // ws/build i ws/install należą na Fedorze do ciebie, nie do nikogo.
+    "--userns=keep-id"
+  ],
+
+  // Repo montujemy pod TĄ SAMĄ ścieżką co na Fedorze. Dzięki temu ścieżka
+  // z komunikatu błędu działa w obu światach, a skrypty mogą przekazywać
+  // $REPO do wnętrza bez tłumaczenia ścieżek.
+  "workspaceMount": "source=${localWorkspaceFolder},target=/home/maniumek/repos/robotics,type=bind",
+  "workspaceFolder": "/home/maniumek/repos/robotics",
+
+  // Użytkownik `ubuntu` ma w obrazie UID 1000 — ten sam co ty na Fedorze.
+  // W parze z --userns=keep-id daje to zgodne właścicielstwo plików.
+  "remoteUser": "ubuntu",
+
+  "customizations": {
+    "vscode": {
+      // Instalują się WEWNĄTRZ kontenera, obok ROS-a. Dlatego Pylance
+      // widzi rclpy — bo sam siedzi w tym samym systemie plików.
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-iot.vscode-ros",
+        "redhat.vscode-xml",
+        "ms-vscode.cpptools"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/bin/python3",
+        // Bez tego Pylance nie znajdzie rclpy: pakiety ROS-a nie leżą
+        // w site-packages Pythona, tylko w drzewie /opt/ros.
+        "python.analysis.extraPaths": [
+          "/opt/ros/jazzy/lib/python3.12/site-packages",
+          "/opt/ros/jazzy/local/lib/python3.12/dist-packages"
+        ],
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+
+  // Wykonuje się raz, po utworzeniu kontenera.
+  //
+  // Sourcing idzie do /etc/profile.d/, a NIE do ~/.bashrc — bo .bashrc
+  // przerywa się na pierwszej linii dla powłok nieinteraktywnych, więc
+  // `podman exec ... bash -lc "ros2 ..."` z Fedory by go nie wykonał.
+  // /etc/profile.d/ czyta każda powłoka logowaniowa, także nieinteraktywna.
+  "postCreateCommand": ".devcontainer/post-create.sh"
+}

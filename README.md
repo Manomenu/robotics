@@ -11,7 +11,7 @@ Skrypty same wchodzą do kontenera; nie musisz nigdzie wchodzić przed nimi.
     scripts/fedora/install-distrobox.sh              raz na maszynę
     scripts/container/create-container-for-ros2.sh   raz: pusty kontener (sekundy)
     scripts/container/install-ros2-in-container.sh   raz: ROS 2 Jazzy (~5 GB, kwadrans)
-    scripts/dev/ros2/enter-ros2-container.sh             codziennie: wejście do środowiska
+    scripts/dev/enter-devcontainer.sh             codziennie: wejście do środowiska
     scripts/dev/build-colcon-workspace.sh            po każdej zmianie w ws/src
 
 Każdy z nich kończy się wypisaniem następnego kroku, więc kolejności nie
@@ -42,8 +42,8 @@ Katalog mówi, **czego dotyczy** skrypt, a nie jak bardzo jest zaawansowany:
 |---|---|---|
 | `create-container-for-ros2.sh` | **pusty** kontener `ros2` (Ubuntu 24.04) | `create-container-for-ros2-revert.sh` |
 | `install-ros2-in-container.sh` | ROS 2 Jazzy + colcon w tym kontenerze | — patrz niżej |
-| `show-ros2-container-status.sh` | czy istnieje, czy chodzi, ile waży — **bez uruchamiania go** | — (nic nie zmienia) |
-| `stop-ros2-container.sh` | zatrzymuje, nic nie kasując; najpierw sprząta osierocone sesje exec | — (`enter` wystartuje go z powrotem) |
+| `show-devcontainer-status.sh` | czy istnieje, czy chodzi, ile waży — **bez uruchamiania go** | — (nic nie zmienia) |
+| `stop-devcontainer.sh` | zatrzymuje, nic nie kasując; najpierw sprząta osierocone sesje exec | — (`enter` wystartuje go z powrotem) |
 
 `install-ros2-in-container.sh` jako jedyny tutaj nie ma własnego revertu,
 i to jest celowe: wszystko, co instaluje, żyje w kontenerze i ginie razem
@@ -68,8 +68,8 @@ się w środku. Ścieżka odbija miejsce po stronie hosta.
 ## scripts/lib — wspólny kod, nie polecenia
 
 `container.sh` trzyma nazwę kontenera, obraz i cztery funkcje, których używa
-reszta skryptów: `require-distrobox-installed`, `require-ros2-container`,
-`run-in-ros2-container "POLECENIE"`, `enter-ros2-container`. Uruchomiona
+reszta skryptów: `require-distrobox-installed`, `require-devcontainer`,
+`run-in-devcontainer "POLECENIE"`, `enter-devcontainer`. Uruchomiona
 wprost odmawia — to biblioteka do `source`owania. Nazwę kontenera zmienia
 się tutaj i tylko tutaj.
 
@@ -103,7 +103,7 @@ parametry. Czasownik na początku nazwy mówi, czego się spodziewać:
 
 | pytanie | skrypt | argumenty |
 |---|---|---|
-| jak wejść do środowiska | `enter-ros2-container.sh` | — |
+| jak wejść do środowiska | `enter-devcontainer.sh` | — |
 | co w ogóle działa | `list-running-nodes.sh` | — |
 | co ten węzeł nadaje i czego słucha | `show-node-connections.sh` | `WĘZEŁ`, np. `/talker` |
 | jakie kanały istnieją | `list-topics.sh` | `[--no-types]`, domyślnie z typami |

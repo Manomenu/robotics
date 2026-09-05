@@ -1,0 +1,13 @@
+# Obraz środowiska. Bazą jest gotowy obraz OSRF z ROS 2 Jazzy i colconem —
+# nie instalujemy ROS-a sami, tylko dokładamy to, czego brakuje do pracy.
+FROM docker.io/osrf/ros:jazzy-desktop
+
+# Użytkownik `ubuntu` (UID 1000, ten sam co twój na Fedorze) w obrazie OSRF
+# nie ma sudo bez hasła. Bez tego postCreateCommand nie zapisze niczego
+# w /etc, a ty nie doinstalujesz pakietu apt-em z terminala VS Code.
+RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu \
+ && chmod 0440 /etc/sudoers.d/ubuntu
+
+# Tu dopisujesz pakiety, gdy projekt ich zażąda, np.:
+#   RUN apt-get update && apt-get install -y ros-jazzy-rosbag2-storage-mcap \
+#    && rm -rf /var/lib/apt/lists/*
