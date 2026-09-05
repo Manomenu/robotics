@@ -45,5 +45,5 @@ cat <<'NEXT'
 Dalej:
 
   scripts/container/show-ros2-container-status.sh   podgląd stanu
-  scripts/ros2/enter-ros2-container.sh              wejście (wystartuje sam)
+  scripts/dev/ros2/enter-ros2-container.sh              wejście (wystartuje sam)
 NEXT

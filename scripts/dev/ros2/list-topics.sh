@@ -8,7 +8,7 @@
 # /rosout i /parameter_events dokłada ROS każdemu węzłowi sam — to
 # odpowiednio zbiorcze logi i powiadomienia o zmianie parametrów.
 set -euo pipefail
-. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/container.sh"
 
 usage() {
   cat <<'U'

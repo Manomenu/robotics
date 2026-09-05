@@ -18,6 +18,6 @@ cat <<'NEXT'
 
 Dalej:
 
-  scripts/ros2/enter-ros2-container.sh        wejście do środowiska
-  scripts/ros2/list-running-nodes.sh          sprawdzenie, czy ROS odpowiada
+  scripts/dev/ros2/enter-ros2-container.sh        wejście do środowiska
+  scripts/dev/ros2/list-running-nodes.sh          sprawdzenie, czy ROS odpowiada
 NEXT

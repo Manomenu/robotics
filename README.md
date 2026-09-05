@@ -11,7 +11,7 @@ Skrypty same wchodzą do kontenera; nie musisz nigdzie wchodzić przed nimi.
     scripts/fedora/install-distrobox.sh              raz na maszynę
     scripts/container/create-container-for-ros2.sh   raz: pusty kontener (sekundy)
     scripts/container/install-ros2-in-container.sh   raz: ROS 2 Jazzy (~5 GB, kwadrans)
-    scripts/ros2/enter-ros2-container.sh             codziennie: wejście do środowiska
+    scripts/dev/ros2/enter-ros2-container.sh             codziennie: wejście do środowiska
     scripts/dev/build-colcon-workspace.sh            po każdej zmianie w ws/src
 
 Każdy z nich kończy się wypisaniem następnego kroku, więc kolejności nie

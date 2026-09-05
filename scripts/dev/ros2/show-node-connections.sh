@@ -7,7 +7,7 @@
 # To jest widok od strony WĘZŁA. Ten sam graf od strony KANAŁU pokazuje
 # show-topic-connections.sh — przydaje się, gdy nie wiesz, kto zasila temat.
 set -euo pipefail
-. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../../lib" && pwd)/container.sh"
 
 usage() {
   cat <<'U'

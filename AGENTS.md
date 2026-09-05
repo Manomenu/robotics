@@ -6,7 +6,7 @@
 
 Skrypt, który zmienia coś na maszynie — instaluje pakiet, tworzy kontener,
 zapisuje plik w `$HOME` — ma bliźniaka z sufiksem `-revert.sh`, który
-przywraca stan sprzed. Skrypt bez skutków ubocznych (`scripts/ros2/enter-ros2-container.sh`)
+przywraca stan sprzed. Skrypt bez skutków ubocznych (`scripts/dev/ros2/enter-ros2-container.sh`)
 bliźniaka nie ma i to jest sygnał, że nic po sobie nie zostawia.
 
 Konsekwencja: projekt nie dokłada się do `~/.dotfiles`. Wszystkie jego
@@ -28,7 +28,7 @@ musisz pamiętać, gdzie jesteś, ani czy dana sesja miała zrobiony `source`.
 Skrypt albo działa, albo mówi, czego brakuje — nigdy nie robi czegoś innego
 dlatego, że uruchomiłeś go z innego miejsca.
 
-`scripts/ros2/enter-ros2-container.sh` nie jest wyjątkiem, tylko jedynym
+`scripts/dev/ros2/enter-ros2-container.sh` nie jest wyjątkiem, tylko jedynym
 skryptem, którego *celem* jest zostawić cię w środku. Reszta wchodzi
 i wychodzi niezauważalnie.
 
@@ -152,12 +152,14 @@ rozjeżdża się po zmianie nazw, bo widać ją przy pierwszym uruchomieniu.
 
     ws/src/                  pakiety ROS — wszystko, co MUSI być pakietem
     projects/<nazwa>/        notatki, analiza offline, dane danego projektu
+
     scripts/fedora/             twoja Fedora — jedyne, co dotyka systemu
     scripts/container/          cykl życia kontenera: powstaje, chodzi, stoi, znika
     scripts/inside-distrobox/   kod wykonywany W ŚRODKU, nie z Fedory
-    scripts/dev/                kod w tym repo
-    scripts/ros2/               żywy system ROS-a
     scripts/lib/                wspólny kod — source'owany, nie uruchamiany
+
+    scripts/dev/                CODZIENNA PRACA
+    scripts/dev/ros2/               oglądanie żywego systemu ROS-a
 
 Podkatalog `scripts/` nazywa **rzecz, której skrypt dotyczy** — Fedory,
 kontenera, kodu, żywego ROS-a. Nie „etap" i nie „poziom trudności".
@@ -165,9 +167,33 @@ Poprzedni podział (`init/`) mówił *kiedy* się to odpala, i rozpadł się
 dokładnie wtedy, gdy doszły stop i status: „raz na maszynę" przestało być
 prawdą, choć kontenera dotyczyły tak samo jak `create`.
 
+### Częstotliwość: `dev/` kontra reszta
+
+Nazwa katalogu mówi, czego skrypt dotyczy. Ale **`dev/` niesie jeszcze jedną
+informację, której nie niesie żaden inny katalog: że użyjesz tego dzisiaj.**
+
+Poza `dev/` wszystko jest jednorazowe albo prawie. `fedora/` odpalisz raz
+w życiu tej maszyny. `container/` raz przy stawianiu, potem najwyżej `stop`
+i `status`, gdy sam się nad tym zastanowisz. `inside-distrobox/` nigdy —
+woła je co innego. `lib/` w ogóle się nie odpala.
+
+W `dev/` jest odwrotnie: `build-colcon-workspace.sh` po każdej zmianie
+w `ws/src`, a `dev/ros2/*` bez przerwy, przez cały czas pracy. To dlatego
+`ros2/` siedzi **wewnątrz** `dev/`, a nie obok: oglądanie działającego
+systemu nie jest osobną czynnością od pisania go, tylko jego drugą połową.
+Piszesz, budujesz, patrzysz, poprawiasz — i te trzy ostatnie kroki są
+w jednym katalogu.
+
+Praktyczna konsekwencja: **kompletując polecenie ścieżką, zaczynasz od
+`scripts/dev/` i tam jest wszystko, czego potrzebujesz w trakcie sesji.**
+Reszta drzewa to konfiguracja, do której wracasz raz na kilka miesięcy albo
+gdy coś się psuje. Gdyby kiedyś doszedł skrypt używany codziennie, a nie
+dotyczący ani kodu, ani żywego ROS-a — trafia do `dev/`, bo częstotliwość
+wygrywa z tematem dopiero na tym poziomie.
+
 Skutki nadal widać w rewertach, tylko teraz jako konsekwencję, nie kryterium:
 `fedora/` i `container/` mają bliźniaki `-revert.sh`, `dev/` kasuje artefakty
-budowy, `ros2/` nie ma żadnego — i to jest sygnał, nie przeoczenie.
+budowy, `dev/ros2/` nie ma żadnego — i to jest sygnał, nie przeoczenie.
 
 Nazwy katalogów pilnują też cudzych znaczeń: `dev/`, a nie `control/`,
 bo „control" w robotyce to warstwa sterowania (`ros2_control`, regulatory)
@@ -175,7 +201,7 @@ i taki katalog czytałoby się jako sterowniki napędów.
 
 **Kontener startuje niejawnie.** Nie ma skryptu `start-`, bo `distrobox enter`
 sam uruchamia zatrzymany kontener. Skutek uboczny wart zapamiętania: nawet
-`scripts/ros2/list-topics.sh`, opisany jako „tylko czyta", potrafi wystartować
+`scripts/dev/ros2/list-topics.sh`, opisany jako „tylko czyta", potrafi wystartować
 kontener i wypisać przy tym ścianę logów distroboxa. Jedyny sposób sprawdzenia
 stanu bez zmieniania go to `container/show-ros2-container-status.sh`, który
 pyta wyłącznie podmana. Zatrzymanie jest jawne, bo tylko ono wymaga decyzji.
