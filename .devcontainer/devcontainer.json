@@ -80,10 +80,13 @@
         // buildem, ws/install/ jeszcze nie istnieje i pakiety z workspace'u
         // są niewidoczne aż do przeładowania okna. Z `-l` każdy nowy
         // terminal sourcuje na świeżo i widzi build sprzed sekundy.
+        // Nadpisujemy ISTNIEJĄCY profil "bash", zamiast dodawać własny pod
+        // nową nazwą — defaultProfile przyjmuje tylko nazwy, które VS Code
+        // sam wykrył, więc "bash (login)" leciało błędem walidacji.
         "terminal.integrated.profiles.linux": {
-          "bash (login)": { "path": "/bin/bash", "args": ["-l"] }
+          "bash": { "path": "/bin/bash", "args": ["-l"] }
         },
-        "terminal.integrated.defaultProfile.linux": "bash (login)"
+        "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
   }
