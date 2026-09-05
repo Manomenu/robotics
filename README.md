@@ -5,27 +5,30 @@ Nauka robotyki przez jeden projekt na raz. Wszystko, co dotyczy ROS-a,
 
 ## Start
 
-    scripts/init/install-distrobox.sh    raz na maszynę
-    scripts/init/create-container.sh     raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
-    scripts/ros2/enter.sh                codziennie: wejście do środowiska
-    scripts/init/build-workspace.sh      po każdej zmianie w ws/src
+    scripts/init/install-distrobox.sh          raz na maszynę
+    scripts/init/create-container-for-ros2.sh  raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
+    scripts/ros2/enter.sh                      codziennie: wejście do środowiska
+    scripts/init/build-workspace.sh            po każdej zmianie w ws/src
 
 ## scripts/init — zmieniają maszynę, każdy ma revert
 
 Kolejność uruchamiania jest kolejnością tabeli. Nazwa każdego skryptu mówi,
 co on **tworzy**: distroboxa, kontener, ROS-a w kontenerze, workspace.
 
+Skrypty w `init/.internal/` odpala inny skrypt, nie ty. Kropka w nazwie
+katalogu jest po to, żeby nie wpadały pod rękę przy dopełnianiu ścieżek.
+
 | skrypt | co robi | co po nim zostaje | cofa |
 |---|---|---|---|
 | `install-distrobox.sh` | `dnf install distrobox` | pakiet na Fedorze | `install-distrobox-revert.sh` |
-| `create-container.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `create-container-revert.sh` |
-| `install-ros2.sh` | ROS 2 Jazzy + colcon wewnątrz kontenera (wołane przez `create-container.sh`, nie z hosta) | tylko w kontenerze | — (ginie z kontenerem) |
+| `create-container-for-ros2.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `create-container-for-ros2-revert.sh` |
+| `.internal/install-ros2-in-container.sh` | ROS 2 Jazzy + colcon **wewnątrz kontenera** — woła go `create-container-for-ros2.sh`, nie uruchamiaj z hosta | tylko w kontenerze | — (ginie z kontenerem) |
 | `build-workspace.sh` | `colcon build` | `ws/{build,install,log}` w repo | `build-workspace-revert.sh` |
 
 Pełne wycofanie, w tej kolejności:
 
     scripts/init/build-workspace-revert.sh
-    scripts/init/create-container-revert.sh
+    scripts/init/create-container-for-ros2-revert.sh
     scripts/init/install-distrobox-revert.sh
     rm -rf ~/repos/robotics
 

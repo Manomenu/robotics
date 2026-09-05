@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# WEWNĄTRZ KONTENERA. Wołane przez create-container.sh — nie uruchamiaj z hosta.
+# WEWNĄTRZ KONTENERA. Wołane przez create-container-for-ros2.sh — nie uruchamiaj z hosta.
 # Nie wymaga własnego revertu: wszystko poza /etc/profile.d/ros2.sh żyje
 # w kontenerze i ginie razem z nim. Dlatego NIE piszemy do ~/.bashrc —
 # katalog domowy jest współdzielony z Fedorą.
