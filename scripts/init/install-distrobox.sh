@@ -5,8 +5,14 @@ set -euo pipefail
 
 if command -v distrobox >/dev/null 2>&1; then
   echo "-> distrobox już jest ($(command -v distrobox))"
-  exit 0
+else
+  sudo dnf install -y distrobox
+  echo "-> distrobox zainstalowany"
 fi
 
-sudo dnf install -y distrobox
-echo "-> distrobox zainstalowany"
+cat <<'NEXT'
+
+Dalej:
+
+  scripts/init/create-container-for-ros2.sh   pusty kontener ros2 (sekundy)
+NEXT
