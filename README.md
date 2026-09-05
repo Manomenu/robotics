@@ -9,11 +9,15 @@ w kontenerze opisanym przez `.devcontainer/` — Fedora zostaje czysta.
 
 Cztery kroki, każdy wypisuje następny, więc kolejności nie musisz pamiętać.
 
-    scripts/fedora/install-devcontainer-cli.sh     devcontainer CLI (npm, globalnie)
-    scripts/fedora/install-vscode-devcontainers.sh rozszerzenie Dev Containers
-    scripts/container/create-devcontainer.sh       obraz + kontener (~7 GB, kilka minut)
-    code ~/repos/robotics                          → F1 → Reopen in Container
-    scripts/dev/build-colcon-workspace.sh          pierwszy build
+    ~/scripts/fedora/init/install-vsc.sh         VS Code + rozszerzenia (poza tym repo)
+    scripts/fedora/install-devcontainer-cli.sh   devcontainer CLI (npm, globalnie)
+    scripts/container/create-devcontainer.sh     obraz + kontener (~7 GB, kilka minut)
+    code ~/repos/robotics                        → F1 → Reopen in Container
+    scripts/dev/build-colcon-workspace.sh        pierwszy build
+
+Krok pierwszy jest **spoza tego projektu** — VS Code i rozszerzenie Dev Containers
+to narzędzia maszyny, przydatne w każdym projekcie z `.devcontainer/`, więc żyją
+w `~/scripts/`. Reverty tego repo ich nie usuwają i nie powinny.
 
 Sprawdzenie, że działa: w `ws/src/<pakiet>/…` import `rclpy` nie jest czerwony,
 a `scripts/dev/ros2/list-topics.sh` z Fedory wypisuje `/rosout`.
@@ -92,11 +96,12 @@ Wszystkie mają `-h` z opisem parametrów. Wszystkie odpalasz z Fedory.
 | skrypt | co robi | cofa |
 |---|---|---|
 | `install-devcontainer-cli.sh` | `npm i -g @devcontainers/cli` — stawianie kontenera z terminala | `install-devcontainer-cli-revert.sh` |
-| `install-vscode-devcontainers.sh` | rozszerzenie Dev Containers w VS Code — stawianie i wejście z edytora | `install-vscode-devcontainers-revert.sh` |
 
-Te dwa robią to samo z dwóch stron: CLI stawia kontener z Ghostty, rozszerzenie
-z VS Code. Rozmawiają z podmanem przez `/usr/bin/docker` (pakiet `podman-docker`),
-więc nic nie trzeba przestawiać.
+Rozszerzenia Dev Containers **nie ma tutaj** — instaluje je
+`~/scripts/fedora/init/install-vsc.sh` razem z resztą VS Code, bo to narzędzie
+maszyny, a nie tego projektu. CLI i rozszerzenie robią to samo z dwóch stron:
+pierwsze stawia kontener z Ghostty, drugie z edytora. Oba gadają z podmanem
+przez `/usr/bin/docker` (pakiet `podman-docker`), więc nic nie trzeba przestawiać.
 
 ### `scripts/container/` — cykl życia kontenera
 
@@ -148,7 +153,7 @@ są sprzęgnięte ręcznie.
 
 | objaw | przyczyna | co zrobić |
 |---|---|---|
-| brak „Reopen in Container" w F1 | nie ma rozszerzenia | `scripts/fedora/install-vscode-devcontainers.sh` |
+| brak „Reopen in Container" w F1 | nie ma rozszerzenia | `~/scripts/fedora/init/install-vsc.sh` |
 | `import rclpy` czerwony w VS Code | nie jesteś w kontenerze | F1 → Reopen in Container |
 | `ros2: command not found` w Ghostty | to normalne — ROS jest tylko w kontenerze | użyj `scripts/dev/ros2/…` albo `enter-devcontainer.sh` |
 | `package not found` tuż po buildzie | terminal starszy niż `ws/install/` | otwórz nowy terminal |
@@ -164,8 +169,7 @@ Pełne wycofanie, w tej kolejności — po nim po projekcie nie zostaje nic:
 
     scripts/dev/build-colcon-workspace-revert.sh    artefakty budowy w repo
     scripts/container/create-devcontainer-revert.sh kontener i obrazy (~7 GB)
-    scripts/fedora/install-vscode-devcontainers-revert.sh  rozszerzenie VS Code
-    scripts/fedora/install-devcontainer-cli-revert.sh      devcontainer CLI
+    scripts/fedora/install-devcontainer-cli-revert.sh  devcontainer CLI
     rm -rf ~/repos/robotics
 
 Zasada, na której to stoi: **co skrypt tworzy poza repo, to `-revert.sh` musi
