@@ -11,7 +11,7 @@ set -euo pipefail
 
 usage() {
   cat <<'U'
-użycie: echo.sh TOPIC [OPCJE ros2 topic echo...]
+użycie: print-topic-messages.sh TOPIC [OPCJE ros2 topic echo...]
 
   TOPIC        pełna nazwa kanału ze slashem, np. /chatter
   OPCJE        przekazywane wprost do `ros2 topic echo`, m.in.:
@@ -20,9 +20,9 @@ użycie: echo.sh TOPIC [OPCJE ros2 topic echo...]
     --no-arr         nie wypisuj zawartości tablic (przydatne przy obrazach)
 
 przykłady:
-  echo.sh /chatter
-  echo.sh /chatter --once
-  echo.sh /vacuum_pressure --field data
+  print-topic-messages.sh /chatter
+  print-topic-messages.sh /chatter --once
+  print-topic-messages.sh /vacuum_pressure --field data
 U
 }
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac
