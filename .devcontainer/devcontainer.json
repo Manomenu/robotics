@@ -3,24 +3,22 @@
 // zarówno klikając, jak i skryptem, i wychodzi to samo.
 {
   "name": "robotics-ros2",
-
   // Środowisko jest OPISANE (Containerfile), nie odtwarzane skryptem.
   // Baza to gotowy obraz OSRF z ROS 2 Jazzy i colconem; Containerfile
   // dokłada tylko to, czego brakuje. Tam dopisujesz pakiety apt.
-  "build": { "dockerfile": "Containerfile" },
-
+  "build": {
+    "dockerfile": "Containerfile"
+  },
   "runArgs": [
     // Przypięta nazwa kontenera. To jest klucz do całej reszty: skrypty
     // z Fedory wołają `podman exec robotics-ros2`, a bez tego podman
     // nadałby nazwę losową i nie dałoby się w nią celować.
     "--name=robotics-ros2",
-
     // DDS (transport ROS-a) wykrywa węzły rozgłoszeniowo i intensywnie
     // używa pamięci dzielonej. Bez tych dwóch flag węzły w kontenerze
     // potrafią się nawzajem nie widzieć albo działać wolno.
     "--network=host",
     "--ipc=host",
-
     // KLUCZOWE przy podmanie rootless, inaczej niż w dockerze:
     // domyślnie UID 1000 w kontenerze mapuje się na subuid hosta, więc
     // kontener NIE MOŻE pisać do zamontowanego repo (sprawdzone — zapis
@@ -28,17 +26,14 @@
     // ws/build i ws/install należą na Fedorze do ciebie, nie do nikogo.
     "--userns=keep-id"
   ],
-
   // Repo montujemy pod TĄ SAMĄ ścieżką co na Fedorze. Dzięki temu ścieżka
   // z komunikatu błędu działa w obu światach, a skrypty mogą przekazywać
   // $REPO do wnętrza bez tłumaczenia ścieżek.
   "workspaceMount": "source=${localWorkspaceFolder},target=/home/maniumek/repos/robotics,type=bind",
   "workspaceFolder": "/home/maniumek/repos/robotics",
-
   // Użytkownik `ubuntu` ma w obrazie UID 1000 — ten sam co ty na Fedorze.
   // W parze z --userns=keep-id daje to zgodne właścicielstwo plików.
   "remoteUser": "ubuntu",
-
   "customizations": {
     "vscode": {
       // Instalują się WEWNĄTRZ kontenera, obok ROS-a. Dlatego Pylance
@@ -46,7 +41,6 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-
         // Następca ms-iot.vscode-ros — Microsoft zarchiwizował swoje
         // rozszerzenie, a utrzymuje je dalej ten sam autor pod szyldem
         // Ranch Hand Robotics. Daje podgląd węzłów i tematów, podpowiedzi
@@ -54,12 +48,21 @@
         // Jest też "rde-pack" — świadomie nie, to zestaw kilku rozszerzeń
         // i dokłada zakładki, których na razie nie potrzebujesz.
         "Ranch-Hand-Robotics.rde-ros-2",
-
         // URDF i pliki launch to XML; przyda się przy tf2 i modelu robota.
         "redhat.vscode-xml",
-
         // Na później: rclcpp i węzły w C++ (temat 08 w roadmapie).
-        "ms-vscode.cpptools"
+        "ms-vscode.cpptools",
+        // Formatter Pythona. MUSI tu być, mimo że jest zainstalowany na
+        // Fedorze: rozszerzenia w devcontainerze to WYŁĄCZNIE ta lista,
+        // host swoich nie przekazuje. Bez tego formatOnSave (włączony
+        // globalnie w install-vsc.sh) po prostu nic nie robi w kontenerze
+        // i nie mówi dlaczego.
+        "charliermarsh.ruff",
+        // To samo — czyta .editorconfig z korzenia repo (wcięcia, LF,
+        // finalny newline) dla plików, których ruff nie dotyka: sh, xml,
+        // yaml, md.
+        "editorconfig.editorconfig",
+        "tamasfe.even-better-toml"
       ],
       "settings": {
         "python.defaultInterpreterPath": "/usr/bin/python3",
@@ -84,7 +87,12 @@
         // nową nazwą — defaultProfile przyjmuje tylko nazwy, które VS Code
         // sam wykrył, więc "bash (login)" leciało błędem walidacji.
         "terminal.integrated.profiles.linux": {
-          "bash": { "path": "/bin/bash", "args": ["-l"] }
+          "bash": {
+            "path": "/bin/bash",
+            "args": [
+              "-l"
+            ]
+          }
         },
         "terminal.integrated.defaultProfile.linux": "bash"
       }

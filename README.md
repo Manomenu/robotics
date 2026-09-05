@@ -122,19 +122,36 @@ go uruchomi.
 | `enter-devcontainer.sh` | oddaje ci powłokę w kontenerze, w katalogu repo | — |
 | `build-colcon-workspace.sh` | `colcon build --symlink-install` bez wchodzenia | `build-colcon-workspace-revert.sh` |
 
-### `scripts/dev/ros2/` — oglądanie żywego systemu
+### `scripts/dev/ros2/` — praca z żywym systemem
 
-Czasownik w nazwie mówi, **czy polecenie odda ci terminal**: `list-` i `show-`
-kończą się same, `print-` i `measure-` lecą do Ctrl+C.
+Czasownik w nazwie mówi dwie rzeczy: **czy polecenie odda ci terminal** i **czy
+tylko patrzy, czy działa**.
 
-| pytanie | skrypt | argumenty |
+| prefiks | oddaje terminal | zmienia coś |
 |---|---|---|
+| `list-`, `show-` | tak, od razu | nie |
+| `print-`, `measure-` | nie, do Ctrl+C | nie |
+| `run-` | nie, do Ctrl+C | **tak** — uruchamia proces |
+| `set-` | tak, od razu | **tak** — zmienia działający węzeł |
+
+Nic tutaj nie ma revertu i to jest celowe: `run-` kończy Ctrl+C, a `set-`
+znika przy restarcie węzła. **Żadna z tych zmian nie przeżywa procesu**, więc
+nie ma czego cofać — inaczej niż w `fedora/` i `container/`.
+
+| co chcesz | skrypt | argumenty |
+|---|---|---|
+| uruchomić węzeł | `run-node.sh` | `PAKIET WĘZEŁ [--ros-args ...]` |
+| zmienić parametr działającego węzła | `set-param.sh` | `WĘZEŁ PARAMETR WARTOŚĆ` |
 | co w ogóle działa | `list-running-nodes.sh` | — |
 | co ten węzeł nadaje i czego słucha | `show-node-connections.sh` | `WĘZEŁ`, np. `/talker` |
 | jakie kanały istnieją | `list-topics.sh` | `[--no-types]` |
 | kto nadaje i kto słucha na kanale | `show-topic-connections.sh` | `TOPIC` |
 | co konkretnie tamtędy leci | `print-topic-messages.sh` | `TOPIC [--once] [--field POLE]` |
 | jak szybko to leci | `measure-topic-rate.sh` | `TOPIC [--window N]` |
+
+`run-node.sh` i `set-param.sh` podpowiadają, gdy nie wiesz, co podać:
+`run-node.sh grip_monitor` wypisze węzły w pakiecie, `set-param.sh /vacuum_sensor`
+wypisze parametry węzła.
 
 Ten sam graf połączeń widać z dwóch stron: `show-node-connections` od strony
 węzła („co ja nadaję"), `show-topic-connections` od strony kanału („kto mnie
