@@ -13,15 +13,15 @@ set -euo pipefail
 
 usage() {
   cat <<'U'
-użycie: hz.sh TOPIC [--window N]
+użycie: measure-topic-rate.sh TOPIC [--window N]
 
   TOPIC        pełna nazwa kanału ze slashem, np. /chatter
   --window N   z ilu ostatnich wiadomości liczyć średnią (domyślnie 10000)
                mniejsze N = szybciej widać zmianę tempa
 
 przykłady:
-  hz.sh /chatter
-  hz.sh /vacuum_pressure --window 50
+  measure-topic-rate.sh /chatter
+  measure-topic-rate.sh /vacuum_pressure --window 50
 U
 }
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac

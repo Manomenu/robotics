@@ -7,7 +7,7 @@ Nauka robotyki przez jeden projekt na raz. Wszystko, co dotyczy ROS-a,
 
     scripts/init/install-distrobox.sh          raz na maszynę
     scripts/init/create-container-for-ros2.sh  raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
-    scripts/ros2/enter.sh                      codziennie: wejście do środowiska
+    scripts/ros2/enter-ros2-container.sh       codziennie: wejście do środowiska
     scripts/dev/build-colcon-workspace.sh      po każdej zmianie w ws/src
 
 ## scripts/init — jednorazowe postawienie środowiska
@@ -42,32 +42,28 @@ Pełne wycofanie, w tej kolejności:
 
 ## scripts/ros2 — oglądanie żywego systemu, nic nie zmieniają
 
-Odpowiadają na cztery pytania o działającą sieć ROS-a, bez zaglądania
-w kod węzłów. `-h` w każdym z nich opisuje parametry.
+Odpalasz je **z Fedory** — same wchodzą do kontenera. `-h` w każdym opisuje
+parametry. Czasownik na początku nazwy mówi, czego się spodziewać:
+
+| prefiks | co robi skrypt |
+|---|---|
+| `enter-` | zmienia twoją sesję — zostajesz w środku, aż wyjdziesz |
+| `list-` | wypisuje, co istnieje, i kończy |
+| `show-` | pokazuje szczegóły jednej wskazanej rzeczy i kończy |
+| `print-` | strumień — leci, dopóki nie przerwiesz Ctrl+C |
+| `measure-` | mierzy przez chwilę i podaje liczby — też do Ctrl+C |
 
 | pytanie | skrypt | argumenty |
 |---|---|---|
-| wejście do środowiska | `enter.sh` | — |
-| co działa | `nodes.sh` | `[WĘZEŁ]` — bez argumentu lista, z argumentem szczegóły |
-| jakie kanały | `topics.sh` | `[--no-types]` |
-| kto nadaje, kto słucha | `who.sh` | `TOPIC` |
-| co leci | `echo.sh` | `TOPIC [--once] [--field POLE] [--no-arr]` |
-| jak szybko leci | `hz.sh` | `TOPIC [--window N]` |
+| jak wejść do środowiska | `enter-ros2-container.sh` | — |
+| co w ogóle działa | `list-running-nodes.sh` | — |
+| co ten węzeł nadaje i czego słucha | `show-node-connections.sh` | `WĘZEŁ`, np. `/talker` |
+| jakie kanały istnieją | `list-topics.sh` | `[--no-types]`, domyślnie z typami |
+| kto nadaje i kto słucha na kanale | `show-topic-connections.sh` | `TOPIC`, np. `/chatter` |
+| co konkretnie tamtędy leci | `print-topic-messages.sh` | `TOPIC [--once] [--field POLE] [--no-arr]` |
+| jak szybko to leci | `measure-topic-rate.sh` | `TOPIC [--window N]` |
 
-Kolejność przy debugowaniu: `nodes` → `topics` → `who` → `echo`/`hz`.
-Nazwy kanałów podaje się ze slashem, np. `/chatter`.
-
-## Układ
-
-    ws/src/          pakiety ROS — wszystko, co musi być pakietem, idzie tu
-    projects/<nazwa> notatki, analiza offline i dane danego projektu
-    scripts/init/    stawianie i rozbieranie środowiska
-    scripts/ros2/    codzienna praca z żywym systemem
-                     (skrypty maszynowe są w ~/scripts, nie tu)
-
-Jeden colcon workspace na całe repo. Kolejny projekt = kolejny pakiet
-w `ws/src/` plus katalog w `projects/`, nie nowe repo.
-
-## Projekty
-
-- `grab-fail-detection` — wykrywanie nieudanego chwytu z sygnałów celi
+Ten sam graf połączeń widać z dwóch stron: `show-node-connections.sh` patrzy
+od strony węzła („co ja nadaję"), `show-topic-connections.sh` od strony kanału
+(„kto mnie zasila"). Przy diagnozie „węzły żyją, a się nie widzą" potrzebne
+są oba.

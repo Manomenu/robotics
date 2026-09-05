@@ -40,6 +40,25 @@ Cena jest taka, że nazwy są długie, a kolejność alfabetyczna przestaje być
 kolejnością uruchamiania. Kolejność jest opisana w README i tam jej się
 szuka — nazwy służą do rozpoznawania, nie do porządkowania.
 
+### Skrypty, które nic nie tworzą
+
+Reguła „rzeczownik zamiast czynności" dotyczy skryptów, które coś zostawiają
+po sobie. Skrypty w `ros2/` nie zostawiają nic, więc ich nazwa mówi, **co
+zobaczysz na ekranie**. Czasownik na początku jest częścią kontraktu:
+
+    enter-     zmienia twoją sesję — zostajesz w środku
+    list-      wypisuje, co istnieje, i kończy
+    show-      szczegóły jednej wskazanej rzeczy, i kończy
+    print-     strumień, leci do Ctrl+C
+    measure-   mierzy i podaje liczby, też do Ctrl+C
+
+Dzięki temu z samej nazwy wiadomo, czy polecenie odda ci terminal, czy nie.
+
+Skrypt nie robi dwóch rzeczy naraz zależnie od liczby argumentów. Dawne
+`nodes.sh` bez argumentu listowało, a z argumentem pokazywało szczegóły —
+i żadna nazwa nie mogła tego uczciwie opisać. Stąd `list-running-nodes.sh`
+i `show-node-connections.sh` osobno.
+
 ### `init/.internal/`
 
 Skrypt, którego **nie uruchamia człowiek**, idzie do `init/.internal/`.

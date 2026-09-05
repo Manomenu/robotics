@@ -11,14 +11,14 @@ set -euo pipefail
 
 usage() {
   cat <<'U'
-użycie: topics.sh [--no-types]
+użycie: list-topics.sh [--no-types]
 
   bez argumentu   nazwy kanałów + typ wiadomości  (ros2 topic list -t)
   --no-types      same nazwy
 
 przykłady:
-  topics.sh
-  topics.sh --no-types
+  list-topics.sh
+  list-topics.sh --no-types
 U
 }
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac

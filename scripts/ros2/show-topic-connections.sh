@@ -13,13 +13,13 @@ set -euo pipefail
 
 usage() {
   cat <<'U'
-użycie: who.sh TOPIC
+użycie: show-topic-connections.sh TOPIC
 
   TOPIC   pełna nazwa kanału ze slashem, np. /chatter
-          listę masz z: scripts/ros2/topics.sh
+          listę masz z: scripts/ros2/list-topics.sh
 
 przykład:
-  who.sh /chatter
+  show-topic-connections.sh /chatter
 U
 }
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac
