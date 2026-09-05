@@ -49,10 +49,18 @@ implementacji — gdyby kiedyś zamienić go na gołe `podman exec`, te nazwy
 zostaną prawdziwe. Nazwa `require-distrobox-installed` jest wyjątkiem
 świadomym: ona dotyczy właśnie narzędzia, nie kontenera.
 
-`run-in-ros2-container` i `enter-ros2-container` używają `exec`, więc muszą
-być **ostatnią** instrukcją skryptu. Kod wyjścia polecenia z kontenera staje
-się kodem wyjścia skryptu, co jest tu pożądane: `-h`, błędny argument i błąd
-z wnętrza kontenera dają rozróżnialne kody.
+Różnica między dwiema funkcjami wchodzącymi jest celowa. `run-in-ros2-container`
+**nie** używa `exec` — wykonuje polecenie i wraca, więc skrypt może po nim
+wypisać następny krok. Kod wyjścia dochodzi normalnie: przy `set -e` błąd
+w kontenerze kończy skrypt tym samym kodem (sprawdzone: `exit 42` w kontenerze
+daje 42 na Fedorze), więc podpowiedź „Dalej" nie pojawi się po niepowodzeniu.
+`enter-ros2-container` używa `exec`, bo to przekazanie powłoki, a nie
+wywołanie polecenia — nic po nim nie ma się wykonać.
+
+Pierwsza wersja helpera miała `exec` w obu i przez to **dwa skrypty musiały
+go omijać**, wołając `distrobox enter` wprost. To był objaw ograniczenia
+helpera, nie właściwość problemu. Reguła: gdy skrypt omija wspólny kod,
+najpierw sprawdź, czy to nie wspólny kod jest za wąski.
 
 ### `scripts/inside-distrobox/`
 

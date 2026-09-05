@@ -12,8 +12,8 @@
 # Funkcje:
 #   require-distrobox-installed        przerywa, gdy nie ma distroboxa
 #   require-ros2-container             przerywa, gdy nie ma kontenera
-#   run-in-ros2-container "POLECENIE"  wykonaj w kontenerze (exec — na końcu skryptu)
-#   enter-ros2-container               zostań w kontenerze  (exec — na końcu skryptu)
+#   run-in-ros2-container "POLECENIE"  wykonaj w kontenerze i wróć tutaj
+#   enter-ros2-container               oddaj powłokę w kontenerze (exec, nie wraca)
 
 [ "${BASH_SOURCE[0]}" != "$0" ] || {
   echo "To biblioteka, nie polecenie — inne skrypty robią na niej 'source'." >&2
@@ -40,13 +40,19 @@ require-ros2-container() {
 }
 
 # bash -l, żeby złapać /etc/profile.d/ros2.sh — czyli source ROS-a i workspace'u.
-# Używa exec, więc MUSI być ostatnią instrukcją skryptu; kod wyjścia polecenia
-# staje się kodem wyjścia skryptu.
+#
+# Świadomie BEZ exec: skrypt ma móc wypisać coś po powrocie, choćby następny
+# krok. Kod wyjścia i tak dochodzi do wołającego — przy `set -e` niepowodzenie
+# w kontenerze kończy skrypt z tym samym kodem, a przy jawnym `|| ...` można
+# je obsłużyć. Wcześniejsza wersja używała exec i przez to dwa skrypty musiały
+# ją omijać; to było ograniczenie helpera, nie własność problemu.
 run-in-ros2-container() {
   require-ros2-container
-  exec distrobox enter "$CONTAINER" -- bash -lc "$*"
+  distrobox enter "$CONTAINER" -- bash -lc "$*"
 }
 
+# Tu exec jest na miejscu: to przekazanie powłoki, nie wywołanie polecenia.
+# Nic po nim nie ma się wykonać — wychodzisz z kontenera prosto do Fedory.
 enter-ros2-container() {
   require-ros2-container
   exec distrobox enter "$CONTAINER" -- bash -l

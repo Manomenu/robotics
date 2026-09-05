@@ -11,10 +11,8 @@ set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/../lib/container.sh"
 
-require-ros2-container
-
 echo "-> instalacja wewnątrz kontenera (może potrwać kwadrans)"
-distrobox enter "$CONTAINER" -- bash "$HERE/../inside-distrobox/container/install-ros2-in-container.sh"
+run-in-ros2-container "bash '$HERE/../inside-distrobox/container/install-ros2-in-container.sh'"
 
 cat <<'NEXT'
 
