@@ -24,6 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
+            'vacuum_sensor = grip_monitor.vacuum_sensor:main'
         ],
     },
 )

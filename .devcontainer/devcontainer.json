@@ -69,7 +69,21 @@
           "/opt/ros/jazzy/lib/python3.12/site-packages",
           "/opt/ros/jazzy/local/lib/python3.12/dist-packages"
         ],
-        "terminal.integrated.defaultProfile.linux": "bash"
+        // Terminal MUSI być powłoką logowaniową (bash -l).
+        //
+        // Domyślnie VS Code startuje powłokę interaktywną NIE-logowaniową,
+        // która czyta ~/.bashrc, a pomija /etc/profile.d/ — czyli dokładnie
+        // to miejsce, gdzie Containerfile zapisał sourcing ROS-a.
+        //
+        // Bez tego działa tylko env złapany raz przez userEnvProbe przy
+        // starcie serwera. Ponieważ probe wykonuje się PRZED pierwszym
+        // buildem, ws/install/ jeszcze nie istnieje i pakiety z workspace'u
+        // są niewidoczne aż do przeładowania okna. Z `-l` każdy nowy
+        // terminal sourcuje na świeżo i widzi build sprzed sekundy.
+        "terminal.integrated.profiles.linux": {
+          "bash (login)": { "path": "/bin/bash", "args": ["-l"] }
+        },
+        "terminal.integrated.defaultProfile.linux": "bash (login)"
       }
     }
   }
