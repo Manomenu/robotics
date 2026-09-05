@@ -8,7 +8,7 @@ Nauka robotyki przez jeden projekt na raz. Wszystko, co dotyczy ROS-a,
     scripts/init/install-distrobox.sh          raz na maszynę
     scripts/init/create-container-for-ros2.sh  raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
     scripts/ros2/enter.sh                      codziennie: wejście do środowiska
-    scripts/dev/build-colcon-workspace.sh            po każdej zmianie w ws/src
+    scripts/dev/build-colcon-workspace.sh      po każdej zmianie w ws/src
 
 ## scripts/init — jednorazowe postawienie środowiska
 
