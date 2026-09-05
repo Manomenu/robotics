@@ -1,9 +1,20 @@
 #!/usr/bin/env bash
-# WEWNĄTRZ KONTENERA. Wołane przez create-container-for-ros2.sh — nie uruchamiaj z hosta.
+# WEWNĄTRZ KONTENERA — jedyny taki skrypt w repo, stąd scripts/inside-distrobox/.
+# Wołany przez scripts/init/create-container-for-ros2.sh, nie z ręki.
+#
 # Nie wymaga własnego revertu: wszystko poza /etc/profile.d/ros2.sh żyje
 # w kontenerze i ginie razem z nim. Dlatego NIE piszemy do ~/.bashrc —
 # katalog domowy jest współdzielony z Fedorą.
 set -euo pipefail
+
+# Konwencja repo mówi, że reszta skryptów uruchamia się z Fedory. Ten jeden
+# nie — a uruchomiony tam próbowałby aptem zmienić hosta, czego żaden revert
+# by nie cofnął. Dlatego sprawdza, gdzie jest, zamiast na to liczyć.
+[ -f /run/.containerenv ] || {
+  echo "Ten skrypt działa tylko wewnątrz kontenera." >&2
+  echo "Z Fedory uruchom: scripts/init/create-container-for-ros2.sh" >&2
+  exit 1
+}
 
 if ! dpkg -s ros-jazzy-desktop >/dev/null 2>&1; then
   sudo apt-get update

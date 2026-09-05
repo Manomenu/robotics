@@ -16,7 +16,7 @@ else
 fi
 
 echo "-> provisioning wewnątrz kontenera (może potrwać kwadrans)"
-distrobox enter "$CONTAINER" -- bash "$HERE/.internal/install-ros2-in-container.sh"
+distrobox enter "$CONTAINER" -- bash "$HERE/../inside-distrobox/init/install-ros2-in-container.sh"
 
 echo
 echo "Gotowe. Wejście:  $HERE/../ros2/enter.sh"

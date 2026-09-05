@@ -15,6 +15,41 @@ wtedy usunięcie repo faktycznie kończy sprawę.
 
 Reverty są idempotentne i mówią, czego nie ruszyły.
 
+## Skąd się uruchamia
+
+**Każdy skrypt w tym repo odpala się z Fedory, z twojego terminala.**
+
+Nie ma kroku „najpierw wejdź do kontenera". Skrypt, który potrzebuje ROS-a,
+sam robi `distrobox enter ros2 -- …` w środku i sam wychodzi. Ty zawsze
+stoisz w tym samym miejscu.
+
+Konsekwencja jest taka, że **nie ma czegoś takiego jak zły terminal**. Nie
+musisz pamiętać, gdzie jesteś, ani czy dana sesja miała zrobiony `source`.
+Skrypt albo działa, albo mówi, czego brakuje — nigdy nie robi czegoś innego
+dlatego, że uruchomiłeś go z innego miejsca.
+
+`scripts/ros2/enter-ros2-container.sh` nie jest wyjątkiem, tylko jedynym
+skryptem, którego *celem* jest zostawić cię w środku. Reszta wchodzi
+i wychodzi niezauważalnie.
+
+### `scripts/inside-distrobox/`
+
+Wyjątek jest jeden i ma własne drzewo. Skrypt, który **musi** wykonać się
+wewnątrz kontenera, leży w `scripts/inside-distrobox/` — w podkatalogu
+odbijającym miejsce, w którym leżałby po stronie hosta:
+
+    scripts/init/create-container-for-ros2.sh          ← wołasz to z Fedory
+    scripts/inside-distrobox/init/install-ros2-in-container.sh   ← to woła tamten
+
+Nazwa katalogu zastępuje dawne `.internal/` i mówi więcej: nie „nie wołaj
+tego ręcznie", tylko konkretnie **„tego nie da się wywołać stąd, gdzie
+stoisz"**. Skrypty stamtąd sprawdzają to same — `install-ros2-in-container.sh`
+odmawia startu, gdy nie widzi `/run/.containerenv`. Bez tego uruchomiony
+na Fedorze próbowałby aptem zmienić hosta, a tego żaden revert by nie cofnął.
+
+Reguła w obie strony: skrypt wymagający kontenera **musi** leżeć pod
+`inside-distrobox/`, i żaden inny skrypt tam leżeć nie może.
+
 ## Nazewnictwo skryptów
 
 Nazwa ma odpowiadać na pytanie, które zadaje się patrząc na `ls`: **co ten
@@ -59,20 +94,6 @@ Skrypt nie robi dwóch rzeczy naraz zależnie od liczby argumentów. Dawne
 i żadna nazwa nie mogła tego uczciwie opisać. Stąd `list-running-nodes.sh`
 i `show-node-connections.sh` osobno.
 
-### `init/.internal/`
-
-Skrypt, którego **nie uruchamia człowiek**, idzie do `init/.internal/`.
-Tam leży `install-ros2-in-container.sh`: woła go `create-container-for-ros2.sh`
-już wewnątrz kontenera, a uruchomiony z hosta zainstalowałby ROS-a na
-Fedorze — czyli złamałby maksymę bez żadnego revertu, który by to cofnął.
-
-Kropka w nazwie katalogu jest celowa: takie skrypty nie mają wpadać pod
-rękę przy dopełnianiu ścieżek. To nie jest ukrywanie, tylko oznaczenie,
-że wywołanie ich wprost jest błędem, a nie opcją.
-
-Skrypt w `.internal/` nie potrzebuje własnego revertu wtedy i tylko wtedy,
-gdy wszystko, co tworzy, ginie razem z kontenerem.
-
 ## Granice
 
 - `~/scripts` — maszyna (przeżywa projekty). `repo/scripts` — projekt.
@@ -86,10 +107,10 @@ gdy wszystko, co tworzy, ginie razem z kontenerem.
 
     ws/src/                  pakiety ROS — wszystko, co MUSI być pakietem
     projects/<nazwa>/        notatki, analiza offline, dane danego projektu
-    scripts/init/            jednorazowe postawienie środowiska (każdy z revertem)
-    scripts/init/.internal/  wołane przez inne skrypty, nie z ręki
-    scripts/dev/             codzienna pętla pracy nad kodem
-    scripts/ros2/            oglądanie żywego systemu (bez skutków ubocznych)
+    scripts/init/               jednorazowe postawienie środowiska (każdy z revertem)
+    scripts/dev/                codzienna pętla pracy nad kodem
+    scripts/ros2/               oglądanie żywego systemu (bez skutków ubocznych)
+    scripts/inside-distrobox/   jedyne, czego NIE odpalasz z Fedory
 
 Podkatalog `scripts/` dzieli się **częstotliwością i skutkiem**, nie tematem:
 
