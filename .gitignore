@@ -1,14 +1,26 @@
-# colcon
+# --- colcon: wszystko odtwarzalne z ws/src ---
 ws/build/
 ws/install/
 ws/log/
 
-# python
+# --- python ---
 __pycache__/
 *.pyc
+*.egg-info/
 .venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
-# dane z przebiegów — duże i odtwarzalne, trzymane poza gitem
+# --- dane z przebiegów: duże i odtwarzalne, trzymane poza gitem ---
 **/bags/
 *.db3
 *.mcap
+
+# --- VS Code ---
+# Całość, bo wszystko tutaj generują rozszerzenia w kontenerze, a jedynym
+# źródłem prawdy o środowisku jest .devcontainer/. Gdyby to commitować,
+# mielibyśmy dwa miejsca mówiące to samo — i rozjeżdżające się.
+# Osobno warte uwagi: browse.vc.db to baza IntelliSense cpptools i potrafi
+# ważyć setki megabajtów (u nas 936 MB po zaindeksowaniu /opt/ros).
+.vscode/
