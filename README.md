@@ -3,6 +3,9 @@
 Nauka robotyki przez jeden projekt na raz. Wszystko, co dotyczy ROS-a,
 żyje w kontenerze `ros2` (Ubuntu 24.04) — Fedora zostaje czysta.
 
+**Wszystkie polecenia poniżej odpalasz ze swojego terminala na Fedorze.**
+Skrypty same wchodzą do kontenera; nie musisz nigdzie wchodzić przed nimi.
+
 ## Start
 
     scripts/init/install-distrobox.sh          raz na maszynę
@@ -16,14 +19,20 @@ Odpalane raz na maszynę. Kolejność uruchamiania jest kolejnością tabeli.
 Nazwa każdego skryptu mówi, co on **tworzy**: distroboxa, kontener, ROS-a
 w kontenerze.
 
-Skrypty w `init/.internal/` odpala inny skrypt, nie ty. Kropka w nazwie
-katalogu jest po to, żeby nie wpadały pod rękę przy dopełnianiu ścieżek.
-
 | skrypt | co robi | co po nim zostaje | cofa |
 |---|---|---|---|
 | `install-distrobox.sh` | `dnf install distrobox` | pakiet na Fedorze | `install-distrobox-revert.sh` |
 | `create-container-for-ros2.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `create-container-for-ros2-revert.sh` |
-| `.internal/install-ros2-in-container.sh` | ROS 2 Jazzy + colcon **wewnątrz kontenera** — woła go `create-container-for-ros2.sh`, nie uruchamiaj z hosta | tylko w kontenerze | — (ginie z kontenerem) |
+
+## scripts/inside-distrobox — jedyne, czego nie odpalasz sam
+
+Wszystko inne w tym repo uruchamiasz **z Fedory** — skrypty same wchodzą do
+kontenera i same z niego wychodzą. Tu leży wyjątek: kod, który musi wykonać
+się w środku. Ścieżka odbija miejsce po stronie hosta.
+
+| skrypt | woła go | co robi |
+|---|---|---|
+| `init/install-ros2-in-container.sh` | `scripts/init/create-container-for-ros2.sh` | instaluje ROS 2 Jazzy + colcon w kontenerze; odmawia startu poza nim |
 
 ## scripts/dev — codzienna pętla pracy nad kodem
 
