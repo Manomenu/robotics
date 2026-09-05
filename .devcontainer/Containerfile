@@ -3,10 +3,27 @@
 FROM docker.io/osrf/ros:jazzy-desktop
 
 # Użytkownik `ubuntu` (UID 1000, ten sam co twój na Fedorze) w obrazie OSRF
-# nie ma sudo bez hasła. Bez tego postCreateCommand nie zapisze niczego
-# w /etc, a ty nie doinstalujesz pakietu apt-em z terminala VS Code.
+# nie ma sudo bez hasła. Bez tego nie doinstalujesz pakietu apt-em
+# z terminala VS Code.
 RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu \
  && chmod 0440 /etc/sudoers.d/ubuntu
+
+# ROS dostępny w KAŻDEJ powłoce w kontenerze.
+#
+# /etc/profile.d/, a nie ~/.bashrc: .bashrc przerywa się na pierwszej linii
+# dla powłok nieinteraktywnych, więc `podman exec ... bash -lc "ros2 ..."`
+# wołane przez skrypty z Fedory nigdy by go nie wykonało.
+#
+# `.` zamiast `source`, bo profile.d bywa czytane przez sh, które source'a
+# nie zna. `[ -f ... ] &&`, bo ws/install/ powstaje dopiero po colcon build.
+# Kolejność nie jest przypadkowa: workspace dokłada się do ROS-a, więc ROS
+# musi być pierwszy.
+#
+# UWAGA: ścieżka poniżej musi zgadzać się z workspaceMount w devcontainer.json.
+RUN printf '%s\n' \
+      '[ -f /opt/ros/jazzy/setup.bash ] && . /opt/ros/jazzy/setup.bash' \
+      '[ -f /home/maniumek/repos/robotics/ws/install/setup.bash ] && . /home/maniumek/repos/robotics/ws/install/setup.bash' \
+      > /etc/profile.d/ros2.sh
 
 # Tu dopisujesz pakiety, gdy projekt ich zażąda, np.:
 #   RUN apt-get update && apt-get install -y ros-jazzy-rosbag2-storage-mcap \
