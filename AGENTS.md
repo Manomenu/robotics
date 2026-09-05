@@ -60,8 +60,8 @@ Wyjątek jest jeden i ma własne drzewo. Skrypt, który **musi** wykonać się
 wewnątrz kontenera, leży w `scripts/inside-distrobox/` — w podkatalogu
 odbijającym miejsce, w którym leżałby po stronie hosta:
 
-    scripts/init/create-container-for-ros2.sh          ← wołasz to z Fedory
-    scripts/inside-distrobox/init/install-ros2-in-container.sh   ← to woła tamten
+    scripts/container/create-container-for-ros2.sh          ← wołasz to z Fedory
+    scripts/inside-distrobox/container/install-ros2-in-container.sh   ← wykonuje się w środku
 
 Nazwa katalogu zastępuje dawne `.internal/` i mówi więcej: nie „nie wołaj
 tego ręcznie", tylko konkretnie **„tego nie da się wywołać stąd, gdzie
@@ -69,8 +69,8 @@ stoisz"**.
 
 **Te same nazwy po obu stronach granicy są celowe.** Para
 
-    scripts/init/install-ros2-in-container.sh                   ← wołasz to
-    scripts/inside-distrobox/init/install-ros2-in-container.sh   ← to robi robotę
+    scripts/container/install-ros2-in-container.sh                   ← wołasz to
+    scripts/inside-distrobox/container/install-ros2-in-container.sh   ← to robi robotę
 
 to jedna czynność widziana z dwóch stron: ta po stronie hosta tylko wchodzi
 i deleguje, ta w środku wykonuje. Gdyby nazwy się różniły, trzeba by pamiętać
@@ -144,23 +144,33 @@ rozjeżdża się po zmianie nazw, bo widać ją przy pierwszym uruchomieniu.
 
     ws/src/                  pakiety ROS — wszystko, co MUSI być pakietem
     projects/<nazwa>/        notatki, analiza offline, dane danego projektu
-    scripts/init/               jednorazowe postawienie środowiska (każdy z revertem)
-    scripts/dev/                codzienna pętla pracy nad kodem
-    scripts/ros2/               oglądanie żywego systemu (bez skutków ubocznych)
+    scripts/fedora/             twoja Fedora — jedyne, co dotyka systemu
+    scripts/container/          cykl życia kontenera: powstaje, chodzi, stoi, znika
+    scripts/inside-distrobox/   kod wykonywany W ŚRODKU, nie z Fedory
+    scripts/dev/                kod w tym repo
+    scripts/ros2/               żywy system ROS-a
     scripts/lib/                wspólny kod — source'owany, nie uruchamiany
-    scripts/inside-distrobox/   jedyne, czego NIE odpalasz z Fedory
 
-Podkatalog `scripts/` dzieli się **częstotliwością i skutkiem**, nie tematem:
+Podkatalog `scripts/` nazywa **rzecz, której skrypt dotyczy** — Fedory,
+kontenera, kodu, żywego ROS-a. Nie „etap" i nie „poziom trudności".
+Poprzedni podział (`init/`) mówił *kiedy* się to odpala, i rozpadł się
+dokładnie wtedy, gdy doszły stop i status: „raz na maszynę" przestało być
+prawdą, choć kontenera dotyczyły tak samo jak `create`.
 
-- `init/` — raz na maszynę, zmienia Fedorę i podmana. Każdy ma revert.
-- `dev/` — bez końca, po każdej zmianie w `ws/src`. Pisze wyłącznie w repo,
-  więc revert kasuje artefakty budowy, a nie odinstalowuje cokolwiek.
-- `ros2/` — bez końca, nie zmienia niczego. Dlatego jako jedyny nie ma
-  revertów i to jest sygnał, nie przeoczenie.
+Skutki nadal widać w rewertach, tylko teraz jako konsekwencję, nie kryterium:
+`fedora/` i `container/` mają bliźniaki `-revert.sh`, `dev/` kasuje artefakty
+budowy, `ros2/` nie ma żadnego — i to jest sygnał, nie przeoczenie.
 
 Nazwy katalogów pilnują też cudzych znaczeń: `dev/`, a nie `control/`,
 bo „control" w robotyce to warstwa sterowania (`ros2_control`, regulatory)
 i taki katalog czytałoby się jako sterowniki napędów.
+
+**Kontener startuje niejawnie.** Nie ma skryptu `start-`, bo `distrobox enter`
+sam uruchamia zatrzymany kontener. Skutek uboczny wart zapamiętania: nawet
+`scripts/ros2/list-topics.sh`, opisany jako „tylko czyta", potrafi wystartować
+kontener i wypisać przy tym ścianę logów distroboxa. Jedyny sposób sprawdzenia
+stanu bez zmieniania go to `container/show-ros2-container-status.sh`, który
+pyta wyłącznie podmana. Zatrzymanie jest jawne, bo tylko ono wymaga decyzji.
 
 Jeden colcon workspace na całe repo. Kolejny projekt to kolejny pakiet
 w `ws/src/` plus katalog w `projects/`, nie nowe repo.

@@ -27,14 +27,14 @@ IMAGE=docker.io/library/ubuntu:24.04
 # więc sprawdzamy tylko narzędzie.
 require-distrobox-installed() {
   command -v distrobox >/dev/null 2>&1 || {
-    echo "brak distroboxa — scripts/init/install-distrobox.sh" >&2
+    echo "brak distroboxa — scripts/fedora/install-distrobox.sh" >&2
     exit 1
   }
 }
 
 require-ros2-container() {
   podman container exists "$CONTAINER" 2>/dev/null || {
-    echo "brak kontenera $CONTAINER — scripts/init/create-container-for-ros2.sh" >&2
+    echo "brak kontenera $CONTAINER — scripts/container/create-container-for-ros2.sh" >&2
     exit 1
   }
 }
