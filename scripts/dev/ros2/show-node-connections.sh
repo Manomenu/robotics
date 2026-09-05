@@ -23,4 +23,4 @@ U
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac
 [ $# -eq 1 ] || { usage >&2; exit 2; }
 
-run-in-ros2-container "ros2 node info '$1'"
+run-in-devcontainer "ros2 node info '$1'"

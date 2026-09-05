@@ -26,4 +26,4 @@ case "${1:-}" in -h|--help) usage; exit 0 ;; esac
 
 FLAG="-t"
 [ "${1:-}" = "--no-types" ] && FLAG=""
-run-in-ros2-container "ros2 topic list $FLAG"
+run-in-devcontainer "ros2 topic list $FLAG"

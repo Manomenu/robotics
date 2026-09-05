@@ -9,7 +9,7 @@ set -euo pipefail
 
 usage() {
   cat <<'U'
-użycie: show-ros2-container-status.sh
+użycie: show-devcontainer-status.sh
 
   Bez argumentów. Wypisuje stan kontenera ros2 widziany z Fedory.
   Nie uruchamia go i nie wchodzi do środka.
@@ -22,7 +22,7 @@ if ! podman container exists "$CONTAINER" 2>/dev/null; then
   echo "kontener:  BRAK"
   echo
   echo "Dalej:"
-  echo "  scripts/container/create-container-for-ros2.sh"
+  echo "  scripts/container/create-devcontainer.sh"
   exit 0
 fi
 
@@ -35,7 +35,7 @@ echo "obraz waży: $(podman image inspect "$IMAGE" --format '{{.Size}}' 2>/dev/n
 case "$(podman ps -a --filter "name=^${CONTAINER}$" --format '{{.State}}')" in
   running)
     echo
-    echo "Chodzi. Zatrzymanie:  scripts/container/stop-ros2-container.sh" ;;
+    echo "Chodzi. Zatrzymanie:  scripts/container/stop-devcontainer.sh" ;;
   *)
     echo
     echo "Stoi. Wystartuje sam przy pierwszym wejściu do niego." ;;

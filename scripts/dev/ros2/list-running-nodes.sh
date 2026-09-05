@@ -23,4 +23,4 @@ U
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac
 [ $# -eq 0 ] || { echo "ten skrypt nie bierze argumentów — szczegóły węzła: show-node-connections.sh" >&2; echo >&2; usage >&2; exit 2; }
 
-run-in-ros2-container "ros2 node list"
+run-in-devcontainer "ros2 node list"

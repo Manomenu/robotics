@@ -3,10 +3,10 @@
 #
 # Kontener po zatrzymaniu zachowuje wszystko: ROS-a, zainstalowane pakiety,
 # stan. Wystartuje sam, gdy następnym razem coś do niego wejdzie.
-# Do skasowania służy create-container-for-ros2-revert.sh — to co innego.
+# Do skasowania służy create-devcontainer-revert.sh — to co innego.
 #
 # Dlaczego to nie jest samo `podman stop`: podman odmawia zatrzymania,
-# dopóki widzi aktywne sesje exec, a każde `distrobox enter` taką zakłada.
+# dopóki widzi aktywne sesje exec, a każde `podman enter` taką zakłada.
 # Przerwane wejście potrafi zostawić wpis, który przeżywa swój proces —
 # dlatego najpierw je sprzątamy, a dopiero potem zatrzymujemy.
 set -euo pipefail
@@ -14,7 +14,7 @@ set -euo pipefail
 
 usage() {
   cat <<'U'
-użycie: stop-ros2-container.sh
+użycie: stop-devcontainer.sh
 
   Bez argumentów. Zatrzymuje kontener ros2, nic nie kasując.
   Najpierw sprząta osierocone sesje exec, bo inaczej podman odmówi.
@@ -44,6 +44,6 @@ cat <<'NEXT'
 
 Dalej:
 
-  scripts/container/show-ros2-container-status.sh   podgląd stanu
-  scripts/dev/ros2/enter-ros2-container.sh              wejście (wystartuje sam)
+  scripts/container/show-devcontainer-status.sh   podgląd stanu
+  scripts/dev/enter-devcontainer.sh              wejście (wystartuje sam)
 NEXT

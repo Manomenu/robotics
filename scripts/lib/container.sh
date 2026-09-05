@@ -1,59 +1,73 @@
 #!/usr/bin/env bash
 # BIBLIOTEKA — nie uruchamiasz jej, tylko `source`ujesz z innego skryptu.
 #
-# Po co istnieje: nazwa kontenera i obraz stały wcześniej zaszyte na sztywno
-# w ośmiu plikach, a „wejdź do kontenera i wykonaj" powtarzało się w dziewięciu.
-# Tutaj jest jedno miejsce, w którym to się zmienia.
-#
-# Wszystko poniżej wykonuje się NA HOŚCIE — to host wchodzi do kontenera,
-# nie odwrotnie. Kod, który sam musi działać w środku, leży w
-# scripts/inside-distrobox/ i tej biblioteki nie używa.
+# Jedno miejsce, w którym stoi nazwa kontenera i sposób wejścia do niego.
+# Nazwa MUSI zgadzać się z --name w .devcontainer/devcontainer.json —
+# to jest jedyne miejsce w repo, gdzie te dwa światy się spotykają.
 #
 # Funkcje:
-#   require-distrobox-installed        przerywa, gdy nie ma distroboxa
-#   require-ros2-container             przerywa, gdy nie ma kontenera
-#   run-in-ros2-container "POLECENIE"  wykonaj w kontenerze i wróć tutaj
-#   enter-ros2-container               oddaj powłokę w kontenerze (exec, nie wraca)
+#   require-devcontainer-cli            przerywa, gdy nie ma `devcontainer`
+#   require-devcontainer              przerywa, gdy kontener nie istnieje
+#   refuse-inside-container             przerywa, gdy jesteś W kontenerze
+#   run-in-devcontainer "POLECENIE"   wykonaj w kontenerze i wróć tutaj
+#   enter-devcontainer                oddaj powłokę w kontenerze (exec)
 
 [ "${BASH_SOURCE[0]}" != "$0" ] || {
   echo "To biblioteka, nie polecenie — inne skrypty robią na niej 'source'." >&2
   exit 1
 }
 
-CONTAINER=ros2
-IMAGE=docker.io/library/ubuntu:24.04
+CONTAINER=robotics-ros2
+IMAGE=docker.io/osrf/ros:jazzy-desktop
 
-# Dla skryptów, które kontener dopiero tworzą — jego jeszcze nie ma,
-# więc sprawdzamy tylko narzędzie.
-require-distrobox-installed() {
-  command -v distrobox >/dev/null 2>&1 || {
-    echo "brak distroboxa — scripts/fedora/install-distrobox.sh" >&2
+# Musi zgadzać się z "remoteUser" w devcontainer.json. `podman exec` bez -u
+# wchodzi jako root, a wtedy pliki tworzone w repo (ws/build) miałyby przy
+# --userns=keep-id błędnego właściciela na Fedorze.
+CONTAINER_USER=ubuntu
+
+# Repo jest zamontowane pod TĄ SAMĄ ścieżką co na Fedorze (patrz
+# workspaceMount w devcontainer.json), więc ścieżka policzona na hoście
+# jest poprawna także w środku. Dzięki temu nie tłumaczymy ścieżek.
+REPO_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+# Skrypty tego repo odpala się WYŁĄCZNIE z Fedory. W kontenerze masz
+# gołe komendy ROS-a i nie potrzebujesz opakowań — a opakowanie użyte
+# w środku próbowałoby wejść do kontenera z kontenera.
+refuse-inside-container() {
+  [ -f /run/.containerenv ] || return 0
+  echo "Jesteś wewnątrz kontenera — te skrypty odpala się z Fedory." >&2
+  echo "Tutaj używaj wprost: ros2 topic list, colcon build, ..." >&2
+  exit 1
+}
+
+require-devcontainer-cli() {
+  command -v devcontainer >/dev/null 2>&1 || {
+    echo "brak devcontainer CLI — scripts/fedora/install-devcontainer-cli.sh" >&2
     exit 1
   }
 }
 
-require-ros2-container() {
+require-devcontainer() {
   podman container exists "$CONTAINER" 2>/dev/null || {
-    echo "brak kontenera $CONTAINER — scripts/container/create-container-for-ros2.sh" >&2
+    echo "brak kontenera $CONTAINER — scripts/container/create-devcontainer.sh" >&2
     exit 1
   }
 }
 
-# bash -l, żeby złapać /etc/profile.d/ros2.sh — czyli source ROS-a i workspace'u.
-#
-# Świadomie BEZ exec: skrypt ma móc wypisać coś po powrocie, choćby następny
-# krok. Kod wyjścia i tak dochodzi do wołającego — przy `set -e` niepowodzenie
-# w kontenerze kończy skrypt z tym samym kodem, a przy jawnym `|| ...` można
-# je obsłużyć. Wcześniejsza wersja używała exec i przez to dwa skrypty musiały
-# ją omijać; to było ograniczenie helpera, nie własność problemu.
-run-in-ros2-container() {
-  require-ros2-container
-  distrobox enter "$CONTAINER" -- bash -lc "$*"
+# bash -l, żeby złapać ~/.bashrc z sourcem ROS-a i workspace'u.
+# Bez exec, żeby skrypt mógł po powrocie wypisać następny krok;
+# kod wyjścia i tak przechodzi (przy set -e kończy skrypt tym samym).
+run-in-devcontainer() {
+  refuse-inside-container
+  require-devcontainer
+  podman start "$CONTAINER" >/dev/null 2>&1 || true
+  podman exec -u "$CONTAINER_USER" -w "$REPO_PATH" "$CONTAINER" bash -lc "$*"
 }
 
 # Tu exec jest na miejscu: to przekazanie powłoki, nie wywołanie polecenia.
-# Nic po nim nie ma się wykonać — wychodzisz z kontenera prosto do Fedory.
-enter-ros2-container() {
-  require-ros2-container
-  exec distrobox enter "$CONTAINER" -- bash -l
+enter-devcontainer() {
+  refuse-inside-container
+  require-devcontainer
+  podman start "$CONTAINER" >/dev/null 2>&1 || true
+  exec podman exec -u "$CONTAINER_USER" -w "$REPO_PATH" -it "$CONTAINER" bash -l
 }

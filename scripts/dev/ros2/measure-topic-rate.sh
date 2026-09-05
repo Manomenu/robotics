@@ -29,4 +29,4 @@ case "${1:-}" in -h|--help) usage; exit 0 ;; esac
 [ $# -ge 1 ] || { usage >&2; exit 2; }
 
 TOPIC="$1"; shift
-run-in-ros2-container "ros2 topic hz '$TOPIC' $*"
+run-in-devcontainer "ros2 topic hz '$TOPIC' $*"
