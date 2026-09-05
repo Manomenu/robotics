@@ -2,7 +2,7 @@
 # HOST. Instaluje ROS 2 Jazzy + colcon w istniejącym kontenerze ros2.
 #
 # Sam nic nie robi: wchodzi do kontenera i uruchamia tam swojego imiennika
-# ze scripts/inside-distrobox/init/. Ta sama nazwa po obu stronach jest
+# ze scripts/inside-distrobox/container/. Ta sama nazwa po obu stronach jest
 # celowa — mówi, że to jedna czynność widziana z dwóch stron granicy.
 #
 # Nie ma własnego revertu: wszystko, co instaluje, żyje w kontenerze
@@ -14,7 +14,7 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 require-ros2-container
 
 echo "-> instalacja wewnątrz kontenera (może potrwać kwadrans)"
-distrobox enter "$CONTAINER" -- bash "$HERE/../inside-distrobox/init/install-ros2-in-container.sh"
+distrobox enter "$CONTAINER" -- bash "$HERE/../inside-distrobox/container/install-ros2-in-container.sh"
 
 cat <<'NEXT'
 

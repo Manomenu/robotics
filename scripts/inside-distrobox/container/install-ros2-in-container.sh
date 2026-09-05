@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # WEWNĄTRZ KONTENERA — jedyny taki skrypt w repo, stąd scripts/inside-distrobox/.
-# Wołany przez scripts/init/create-container-for-ros2.sh, nie z ręki.
+# Wołany przez scripts/container/create-container-for-ros2.sh, nie z ręki.
 #
 # Nie wymaga własnego revertu: wszystko poza /etc/profile.d/ros2.sh żyje
 # w kontenerze i ginie razem z nim. Dlatego NIE piszemy do ~/.bashrc —
@@ -12,7 +12,7 @@ set -euo pipefail
 # by nie cofnął. Dlatego sprawdza, gdzie jest, zamiast na to liczyć.
 [ -f /run/.containerenv ] || {
   echo "Ten skrypt działa tylko wewnątrz kontenera." >&2
-  echo "Z Fedory uruchom: scripts/init/create-container-for-ros2.sh" >&2
+  echo "Z Fedory uruchom: scripts/container/create-container-for-ros2.sh" >&2
   exit 1
 }
 

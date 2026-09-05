@@ -14,5 +14,5 @@ cat <<'NEXT'
 
 Dalej:
 
-  scripts/init/create-container-for-ros2.sh   pusty kontener ros2 (sekundy)
+  scripts/container/create-container-for-ros2.sh   pusty kontener ros2 (sekundy)
 NEXT

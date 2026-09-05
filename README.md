@@ -8,39 +8,52 @@ Skrypty same wchodzą do kontenera; nie musisz nigdzie wchodzić przed nimi.
 
 ## Start
 
-    scripts/init/install-distrobox.sh           raz na maszynę
-    scripts/init/create-container-for-ros2.sh   raz: pusty kontener (sekundy)
-    scripts/init/install-ros2-in-container.sh   raz: ROS 2 Jazzy (~5 GB, kwadrans)
-    scripts/ros2/enter-ros2-container.sh        codziennie: wejście do środowiska
-    scripts/dev/build-colcon-workspace.sh       po każdej zmianie w ws/src
+    scripts/fedora/install-distrobox.sh              raz na maszynę
+    scripts/container/create-container-for-ros2.sh   raz: pusty kontener (sekundy)
+    scripts/container/install-ros2-in-container.sh   raz: ROS 2 Jazzy (~5 GB, kwadrans)
+    scripts/ros2/enter-ros2-container.sh             codziennie: wejście do środowiska
+    scripts/dev/build-colcon-workspace.sh            po każdej zmianie w ws/src
 
 Każdy z nich kończy się wypisaniem następnego kroku, więc kolejności nie
 trzeba pamiętać — wystarczy czytać, co mówi ostatni uruchomiony.
 
-## scripts/init — jednorazowe postawienie środowiska
+## Podział scripts/
 
-Odpalane raz na maszynę. Kolejność uruchamiania jest kolejnością tabeli.
-Nazwa każdego skryptu mówi, co on **tworzy**: distroboxa, kontener, ROS-a
-w kontenerze. Żaden nie robi dwóch z tych rzeczy naraz.
+Katalog mówi, **czego dotyczy** skrypt, a nie jak bardzo jest zaawansowany:
+
+| katalog | czego dotyczy | jak często |
+|---|---|---|
+| `fedora/` | twoja Fedora | raz na maszynę |
+| `container/` | cykl życia kontenera `ros2`: powstaje, chodzi, stoi, znika | raz, plus stop/status kiedy chcesz |
+| `inside-distrobox/` | kod wykonywany **w środku** kontenera; ścieżka odbija stronę hosta | wołany przez inne skrypty |
+| `dev/` | kod w tym repo | po każdej zmianie w `ws/src` |
+| `ros2/` | żywy system ROS-a | bez końca |
+| `lib/` | wspólny kod — `source`owany, nie uruchamiany | — |
+
+## scripts/fedora — jedyne, co zmienia twój system
 
 | skrypt | co robi | co po nim zostaje | cofa |
 |---|---|---|---|
 | `install-distrobox.sh` | `dnf install distrobox` | pakiet na Fedorze | `install-distrobox-revert.sh` |
-| `create-container-for-ros2.sh` | **pusty** kontener `ros2` (Ubuntu 24.04) | kontener, obraz | `create-container-for-ros2-revert.sh` |
-| `install-ros2-in-container.sh` | ROS 2 Jazzy + colcon w tym kontenerze | wyłącznie wnętrze kontenera, plus `~/.ros`, `~/.colcon` | — patrz niżej |
 
-`install-ros2-in-container.sh` jako jedyny w `init/` nie ma własnego revertu,
+## scripts/container — cykl życia kontenera
+
+| skrypt | co robi | cofa |
+|---|---|---|
+| `create-container-for-ros2.sh` | **pusty** kontener `ros2` (Ubuntu 24.04) | `create-container-for-ros2-revert.sh` |
+| `install-ros2-in-container.sh` | ROS 2 Jazzy + colcon w tym kontenerze | — patrz niżej |
+| `show-ros2-container-status.sh` | czy istnieje, czy chodzi, ile waży — **bez uruchamiania go** | — (nic nie zmienia) |
+| `stop-ros2-container.sh` | zatrzymuje, nic nie kasując; najpierw sprząta osierocone sesje exec | — (`enter` wystartuje go z powrotem) |
+
+`install-ros2-in-container.sh` jako jedyny tutaj nie ma własnego revertu,
 i to jest celowe: wszystko, co instaluje, żyje w kontenerze i ginie razem
 z nim. Cofa je `create-container-for-ros2-revert.sh`, który przy okazji
 sprząta `~/.ros` i `~/.colcon` ze współdzielonego katalogu domowego.
 
-## scripts/lib — wspólny kod, nie polecenia
-
-`container.sh` trzyma nazwę kontenera, obraz i cztery funkcje, których używa
-reszta skryptów: `require-distrobox-installed`, `require-ros2-container`,
-`run-in-ros2-container "POLECENIE"`, `enter-ros2-container`. Uruchomiona
-wprost odmawia — to biblioteka do `source`owania. Nazwę kontenera zmienia
-się tutaj i tylko tutaj.
+**Kontener uruchamia się sam.** Nie ma skryptu `start-` i nie jest to
+przeoczenie: `distrobox enter` startuje zatrzymany kontener, zanim do niego
+wejdzie. Startuje go więc ten skrypt, który akurat pierwszy go potrzebuje —
+choćby `list-topics.sh`. Zatrzymanie jest jawne, bo tylko ono wymaga decyzji.
 
 ## scripts/inside-distrobox — jedyne, czego nie odpalasz sam
 
@@ -50,7 +63,15 @@ się w środku. Ścieżka odbija miejsce po stronie hosta.
 
 | skrypt | woła go | co robi |
 |---|---|---|
-| `init/install-ros2-in-container.sh` | `scripts/init/create-container-for-ros2.sh` | instaluje ROS 2 Jazzy + colcon w kontenerze; odmawia startu poza nim |
+| `container/install-ros2-in-container.sh` | `scripts/container/install-ros2-in-container.sh` | instaluje ROS 2 Jazzy + colcon; odmawia startu poza kontenerem |
+
+## scripts/lib — wspólny kod, nie polecenia
+
+`container.sh` trzyma nazwę kontenera, obraz i cztery funkcje, których używa
+reszta skryptów: `require-distrobox-installed`, `require-ros2-container`,
+`run-in-ros2-container "POLECENIE"`, `enter-ros2-container`. Uruchomiona
+wprost odmawia — to biblioteka do `source`owania. Nazwę kontenera zmienia
+się tutaj i tylko tutaj.
 
 ## scripts/dev — codzienna pętla pracy nad kodem
 
@@ -63,8 +84,8 @@ W przeciwieństwie do `init/` odpalane bez końca: po każdej zmianie w `ws/src`
 Pełne wycofanie, w tej kolejności:
 
     scripts/dev/build-colcon-workspace-revert.sh
-    scripts/init/create-container-for-ros2-revert.sh
-    scripts/init/install-distrobox-revert.sh
+    scripts/container/create-container-for-ros2-revert.sh
+    scripts/fedora/install-distrobox-revert.sh
     rm -rf ~/repos/robotics
 
 ## scripts/ros2 — oglądanie żywego systemu, nic nie zmieniają

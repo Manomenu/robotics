@@ -18,7 +18,7 @@ cat <<'NEXT'
 
 Dalej:
 
-  scripts/init/install-ros2-in-container.sh   ROS 2 Jazzy + colcon w kontenerze
+  scripts/container/install-ros2-in-container.sh   ROS 2 Jazzy + colcon w kontenerze
                                               (~5 GB, kwadrans — raz)
 
   scripts/ros2/enter-ros2-container.sh        wejście do środowiska
