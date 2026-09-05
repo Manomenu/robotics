@@ -1,0 +1,36 @@
+# Wcięcia i końce linii — jedyna warstwa, którą rozumie KAŻDY edytor.
+# Czyta to rozszerzenie EditorConfig w VS Code (i nvim, i GitHub w podglądzie).
+# Rzeczy językowe (długość linii, cudzysłowy) są w ruff.toml — tu tylko to,
+# co dotyczy plików bez własnego formattera.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# PEP 8 / styl ament — 4 spacje. Sprawdza to ament_flake8 w `colcon test`.
+[*.py]
+indent_size = 4
+
+# package.xml, pliki launch, URDF — w ROS-ie konwencjonalnie 2 spacje.
+[*.{xml,urdf,xacro,sdf}]
+indent_size = 2
+
+[*.{yaml,yml,json,jsonc}]
+indent_size = 2
+
+# Skrypty w scripts/ — 2 spacje, tak jak reszta Twoich skryptów z Fedory.
+[*.{sh,bash,zsh}]
+indent_size = 2
+
+# W Makefile'ach tab jest składnią, nie stylem.
+[Makefile]
+indent_style = tab
+
+# Dwie spacje na końcu linii to w Markdownie twardy <br>.
+[*.md]
+trim_trailing_whitespace = false

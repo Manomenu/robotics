@@ -125,8 +125,16 @@ zobaczysz na ekranie**. Czasownik na początku jest częścią kontraktu:
     show-      szczegóły jednej wskazanej rzeczy, i kończy
     print-     strumień, leci do Ctrl+C
     measure-   mierzy i podaje liczby, też do Ctrl+C
+    run-       uruchamia proces i trzyma terminal do Ctrl+C
+    set-       zmienia stan działającego węzła i wraca
 
 Dzięki temu z samej nazwy wiadomo, czy polecenie odda ci terminal, czy nie.
+
+`run-` i `set-` zmieniają stan, a mimo to nie mają revertów — bo zmieniają
+stan **procesu**, nie maszyny. Ctrl+C i restart węzła cofają wszystko.
+Maksyma dotyczy tego, co przeżywa proces; tutaj nic nie przeżywa. Stąd
+korekta wcześniejszego opisu `dev/ros2/`: to nie jest katalog „tylko czyta",
+tylko „nic nie zostawia po sobie".
 
 Skrypt nie robi dwóch rzeczy naraz. Dawne `nodes.sh` bez argumentu listowało,
 a z argumentem pokazywało szczegóły; dawne `create-container-for-ros2.sh`
@@ -197,7 +205,7 @@ wygrywa z tematem dopiero na tym poziomie.
 
 Skutki nadal widać w rewertach, tylko teraz jako konsekwencję, nie kryterium:
 `fedora/` i `container/` mają bliźniaki `-revert.sh`, `dev/` kasuje artefakty
-budowy, `dev/ros2/` nie ma żadnego — i to jest sygnał, nie przeoczenie.
+budowy, `dev/ros2/` nie ma żadnego — bo nic tam nie przeżywa procesu.
 
 Nazwy katalogów pilnują też cudzych znaczeń: `dev/`, a nie `control/`,
 bo „control" w robotyce to warstwa sterowania (`ros2_control`, regulatory)

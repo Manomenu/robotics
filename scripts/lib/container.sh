@@ -61,7 +61,14 @@ run-in-devcontainer() {
   refuse-inside-container
   require-devcontainer
   podman start "$CONTAINER" >/dev/null 2>&1 || true
-  podman exec -u "$CONTAINER_USER" -w "$REPO_PATH" "$CONTAINER" bash -lc "$*"
+
+  # Terminal podpinamy tylko wtedy, gdy sami go mamy. Bez tego Ctrl+C nie
+  # dochodzi do procesu w kontenerze, a węzły i podsłuch działają do Ctrl+C.
+  # Gdy wyjście idzie do potoku albo pliku, -t psułoby formatowanie.
+  local tty=()
+  [ -t 0 ] && [ -t 1 ] && tty=(-i -t)
+
+  podman exec -u "$CONTAINER_USER" -w "$REPO_PATH" ${tty[@]+"${tty[@]}"} "$CONTAINER" bash -lc "$*"
 }
 
 # Tu exec jest na miejscu: to przekazanie powłoki, nie wywołanie polecenia.

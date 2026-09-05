@@ -1,0 +1,60 @@
+# Config ruffa dla całego repo.
+#
+# Dlaczego ruff.toml, a nie pyproject.toml: pakiety ROS-a mają build_type
+# ament_python, czyli setup.py + setup.cfg + package.xml. pyproject.toml
+# nie jest tam elementem konwencji, a ruff i tak czyta ruff.toml pierwszy
+# (idąc w górę drzewa od formatowanego pliku), więc nic nie tracimy.
+#
+# Cel tego pliku: żeby formatOnSave w VS Code NIE psuł tego, co zaraz
+# sprawdzi `colcon test`. ament_flake8 i ament_pep257 chodzą z własną
+# konfiguracją, której nie da się nadpisać z repo — więc to my musimy
+# się do niej dopasować. Źródło:
+#   /opt/ros/jazzy/lib/python3.12/site-packages/ament_flake8/configuration/ament_flake8.ini
+
+# ament_flake8.ini: max-line-length = 99. Ruff domyślnie tnie na 88 —
+# bez tej linijki formatter łamałby linie inaczej, niż wymaga CI.
+line-length = 99
+
+# Python w obrazie ROS 2 Jazzy (Ubuntu 24.04).
+target-version = "py312"
+
+# ROS-owe artefakty builda — nigdy nie nasze pliki.
+extend-exclude = ["ws/build", "ws/install", "ws/log"]
+
+[format]
+# NAJWAŻNIEJSZA linijka w tym pliku. ament_flake8 ciągnie wtyczkę
+# flake8-quotes, która domyślnie wymaga apostrofów; kod generowany przez
+# `ros2 pkg create` (patrz setup.py) też jest w apostrofach. Ruff formatuje
+# domyślnie w cudzysłowach — bez tego każdy zapis pliku przepisywałby
+# 'foo' na "foo", a `colcon test` sypał Q000 na każdej takiej linii.
+quote-style = "single"
+
+[lint]
+# Odpowiednik flake8 z ament: błędy pycodestyle (E/W), pyflakes (F),
+# sortowanie importów (I) i docstringi (D, czyli ament_pep257).
+select = ["E", "W", "F", "I", "D"]
+
+# Przepisane z extend-ignore w ament_flake8.ini — tylko te kody, które
+# ruff w ogóle zna. B902, C816 i I202 pochodzą z wtyczek flake8, dla
+# których ruff nie ma odpowiednika, więc ich tu nie ma.
+ignore = [
+  "D100", # brak docstringa w module
+  "D101", # ... w klasie
+  "D102", # ... w metodzie publicznej
+  "D103", # ... w funkcji publicznej
+  "D104", # ... w pakiecie
+  "D105", # ... w metodzie magicznej
+  "D106", # ... w klasie zagnieżdżonej
+  "D107", # ... w __init__
+  "D203", # pusta linia przed docstringiem klasy (kłóci się z D211)
+  "D212", # pierwsza linia docstringa w tej samej linii co """
+  "D404", # docstring nie może zaczynać się od "This"
+]
+
+[lint.pydocstyle]
+convention = "pep257"
+
+[lint.isort]
+# ament_flake8.ini: import-order-style = google — czyli `import x`
+# i `from x import y` w jednej sekcji, posortowane razem.
+force-sort-within-sections = true
