@@ -8,6 +8,7 @@
 # /rosout i /parameter_events dokłada ROS każdemu węzłowi sam — to
 # odpowiednio zbiorcze logi i powiadomienia o zmianie parametrów.
 set -euo pipefail
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"
 
 usage() {
   cat <<'U'
@@ -22,8 +23,7 @@ przykłady:
 U
 }
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac
-podman container exists ros2 || { echo "brak kontenera ros2 — scripts/init/create-container-for-ros2.sh" >&2; exit 1; }
 
 FLAG="-t"
 [ "${1:-}" = "--no-types" ] && FLAG=""
-exec distrobox enter ros2 -- bash -lc "ros2 topic list $FLAG"
+run-in-ros2-container "ros2 topic list $FLAG"

@@ -24,6 +24,14 @@ w kontenerze.
 | `install-distrobox.sh` | `dnf install distrobox` | pakiet na Fedorze | `install-distrobox-revert.sh` |
 | `create-container-for-ros2.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `create-container-for-ros2-revert.sh` |
 
+## scripts/lib — wspólny kod, nie polecenia
+
+`container.sh` trzyma nazwę kontenera, obraz i cztery funkcje, których używa
+reszta skryptów: `require-distrobox-installed`, `require-ros2-container`,
+`run-in-ros2-container "POLECENIE"`, `enter-ros2-container`. Uruchomiona
+wprost odmawia — to biblioteka do `source`owania. Nazwę kontenera zmienia
+się tutaj i tylko tutaj.
+
 ## scripts/inside-distrobox — jedyne, czego nie odpalasz sam
 
 Wszystko inne w tym repo uruchamiasz **z Fedory** — skrypty same wchodzą do

@@ -2,5 +2,6 @@
 # HOST. colcon build workspace'u repo, bez wchodzenia do kontenera.
 # Pisze tylko w repo (ws/build, ws/install, ws/log). Cofa: build-colcon-workspace-revert.sh
 set -euo pipefail
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-exec distrobox enter ros2 -- bash -lc "cd '$REPO/ws' && colcon build --symlink-install"
+run-in-ros2-container "cd '$REPO/ws' && colcon build --symlink-install"

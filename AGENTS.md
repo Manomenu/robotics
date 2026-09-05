@@ -6,7 +6,7 @@
 
 Skrypt, który zmienia coś na maszynie — instaluje pakiet, tworzy kontener,
 zapisuje plik w `$HOME` — ma bliźniaka z sufiksem `-revert.sh`, który
-przywraca stan sprzed. Skrypt bez skutków ubocznych (`scripts/ros2/enter.sh`)
+przywraca stan sprzed. Skrypt bez skutków ubocznych (`scripts/ros2/enter-ros2-container.sh`)
 bliźniaka nie ma i to jest sygnał, że nic po sobie nie zostawia.
 
 Konsekwencja: projekt nie dokłada się do `~/.dotfiles`. Wszystkie jego
@@ -31,6 +31,28 @@ dlatego, że uruchomiłeś go z innego miejsca.
 `scripts/ros2/enter-ros2-container.sh` nie jest wyjątkiem, tylko jedynym
 skryptem, którego *celem* jest zostawić cię w środku. Reszta wchodzi
 i wychodzi niezauważalnie.
+
+### `scripts/lib/`
+
+Skoro każdy skrypt sam wchodzi do kontenera, to wejście powtarzało się
+w dziewięciu plikach, a nazwa kontenera stała na sztywno w ośmiu. Wspólna
+część siedzi w `scripts/lib/container.sh` — **bibliotece, nie poleceniu**:
+`source`ują ją inne skrypty, a uruchomiona wprost odmawia i mówi dlaczego.
+
+    require-distrobox-installed        przerywa, gdy nie ma distroboxa
+    require-ros2-container             przerywa, gdy nie ma kontenera
+    run-in-ros2-container "POLECENIE"  wykonaj w kontenerze
+    enter-ros2-container               zostań w kontenerze
+
+Nazwy mówią `ros2-container`, a nie `distrobox`, bo distrobox jest szczegółem
+implementacji — gdyby kiedyś zamienić go na gołe `podman exec`, te nazwy
+zostaną prawdziwe. Nazwa `require-distrobox-installed` jest wyjątkiem
+świadomym: ona dotyczy właśnie narzędzia, nie kontenera.
+
+`run-in-ros2-container` i `enter-ros2-container` używają `exec`, więc muszą
+być **ostatnią** instrukcją skryptu. Kod wyjścia polecenia z kontenera staje
+się kodem wyjścia skryptu, co jest tu pożądane: `-h`, błędny argument i błąd
+z wnętrza kontenera dają rozróżnialne kody.
 
 ### `scripts/inside-distrobox/`
 
@@ -110,6 +132,7 @@ i `show-node-connections.sh` osobno.
     scripts/init/               jednorazowe postawienie środowiska (każdy z revertem)
     scripts/dev/                codzienna pętla pracy nad kodem
     scripts/ros2/               oglądanie żywego systemu (bez skutków ubocznych)
+    scripts/lib/                wspólny kod — source'owany, nie uruchamiany
     scripts/inside-distrobox/   jedyne, czego NIE odpalasz z Fedory
 
 Podkatalog `scripts/` dzieli się **częstotliwością i skutkiem**, nie tematem:
