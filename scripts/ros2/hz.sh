@@ -26,7 +26,7 @@ U
 }
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac
 [ $# -ge 1 ] || { usage >&2; exit 2; }
-podman container exists ros2 || { echo "brak kontenera ros2 — scripts/init/create.sh" >&2; exit 1; }
+podman container exists ros2 || { echo "brak kontenera ros2 — scripts/init/create-container.sh" >&2; exit 1; }
 
 TOPIC="$1"; shift
 exec distrobox enter ros2 -- bash -lc "ros2 topic hz '$TOPIC' $*"

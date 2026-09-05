@@ -5,24 +5,27 @@ Nauka robotyki przez jeden projekt na raz. Wszystko, co dotyczy ROS-a,
 
 ## Start
 
-    scripts/init/install-distrobox.sh   raz na maszynę
-    scripts/init/create.sh              raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
-    scripts/ros2/enter.sh               codziennie: wejście do środowiska
-    scripts/init/build.sh               budowa ws/ (colcon)
+    scripts/init/install-distrobox.sh    raz na maszynę
+    scripts/init/create-container.sh     raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
+    scripts/ros2/enter.sh                codziennie: wejście do środowiska
+    scripts/init/build-workspace.sh      po każdej zmianie w ws/src
 
 ## scripts/init — zmieniają maszynę, każdy ma revert
+
+Kolejność uruchamiania jest kolejnością tabeli. Nazwa każdego skryptu mówi,
+co on **tworzy**: distroboxa, kontener, ROS-a w kontenerze, workspace.
 
 | skrypt | co robi | co po nim zostaje | cofa |
 |---|---|---|---|
 | `install-distrobox.sh` | `dnf install distrobox` | pakiet na Fedorze | `install-distrobox-revert.sh` |
-| `create.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `create-revert.sh` |
-| `provision.sh` | wnętrze kontenera (wołane przez `create.sh`) | tylko w kontenerze | — (ginie z kontenerem) |
-| `build.sh` | `colcon build` | `ws/{build,install,log}` w repo | `build-revert.sh` |
+| `create-container.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `create-container-revert.sh` |
+| `install-ros2.sh` | ROS 2 Jazzy + colcon wewnątrz kontenera (wołane przez `create-container.sh`, nie z hosta) | tylko w kontenerze | — (ginie z kontenerem) |
+| `build-workspace.sh` | `colcon build` | `ws/{build,install,log}` w repo | `build-workspace-revert.sh` |
 
 Pełne wycofanie, w tej kolejności:
 
-    scripts/init/build-revert.sh
-    scripts/init/create-revert.sh
+    scripts/init/build-workspace-revert.sh
+    scripts/init/create-container-revert.sh
     scripts/init/install-distrobox-revert.sh
     rm -rf ~/repos/robotics
 

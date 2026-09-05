@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# HOST. Cofa ros2-create.sh: kontener, jego obraz i ślady, które ROS
+# HOST. Cofa create-container.sh: kontener, jego obraz i ślady, które ROS
 # zostawia we WSPÓŁDZIELONYM katalogu domowym.
 set -euo pipefail
 

@@ -22,7 +22,7 @@ przykłady:
 U
 }
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac
-podman container exists ros2 || { echo "brak kontenera ros2 — scripts/init/create.sh" >&2; exit 1; }
+podman container exists ros2 || { echo "brak kontenera ros2 — scripts/init/create-container.sh" >&2; exit 1; }
 
 FLAG="-t"
 [ "${1:-}" = "--no-types" ] && FLAG=""
