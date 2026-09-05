@@ -8,21 +8,31 @@ Skrypty same wchodzą do kontenera; nie musisz nigdzie wchodzić przed nimi.
 
 ## Start
 
-    scripts/init/install-distrobox.sh          raz na maszynę
-    scripts/init/create-container-for-ros2.sh  raz: kontener + ROS 2 Jazzy (~5 GB, kwadrans)
-    scripts/ros2/enter-ros2-container.sh       codziennie: wejście do środowiska
-    scripts/dev/build-colcon-workspace.sh      po każdej zmianie w ws/src
+    scripts/init/install-distrobox.sh           raz na maszynę
+    scripts/init/create-container-for-ros2.sh   raz: pusty kontener (sekundy)
+    scripts/init/install-ros2-in-container.sh   raz: ROS 2 Jazzy (~5 GB, kwadrans)
+    scripts/ros2/enter-ros2-container.sh        codziennie: wejście do środowiska
+    scripts/dev/build-colcon-workspace.sh       po każdej zmianie w ws/src
+
+Każdy z nich kończy się wypisaniem następnego kroku, więc kolejności nie
+trzeba pamiętać — wystarczy czytać, co mówi ostatni uruchomiony.
 
 ## scripts/init — jednorazowe postawienie środowiska
 
 Odpalane raz na maszynę. Kolejność uruchamiania jest kolejnością tabeli.
 Nazwa każdego skryptu mówi, co on **tworzy**: distroboxa, kontener, ROS-a
-w kontenerze.
+w kontenerze. Żaden nie robi dwóch z tych rzeczy naraz.
 
 | skrypt | co robi | co po nim zostaje | cofa |
 |---|---|---|---|
 | `install-distrobox.sh` | `dnf install distrobox` | pakiet na Fedorze | `install-distrobox-revert.sh` |
-| `create-container-for-ros2.sh` | kontener `ros2` + ROS 2 Jazzy | kontener, obraz, `~/.ros`, `~/.colcon` | `create-container-for-ros2-revert.sh` |
+| `create-container-for-ros2.sh` | **pusty** kontener `ros2` (Ubuntu 24.04) | kontener, obraz | `create-container-for-ros2-revert.sh` |
+| `install-ros2-in-container.sh` | ROS 2 Jazzy + colcon w tym kontenerze | wyłącznie wnętrze kontenera, plus `~/.ros`, `~/.colcon` | — patrz niżej |
+
+`install-ros2-in-container.sh` jako jedyny w `init/` nie ma własnego revertu,
+i to jest celowe: wszystko, co instaluje, żyje w kontenerze i ginie razem
+z nim. Cofa je `create-container-for-ros2-revert.sh`, który przy okazji
+sprząta `~/.ros` i `~/.colcon` ze współdzielonego katalogu domowego.
 
 ## scripts/lib — wspólny kod, nie polecenia
 
