@@ -7,6 +7,7 @@
 #
 # Szczegóły pojedynczego węzła: show-node-connections.sh
 set -euo pipefail
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"
 
 usage() {
   cat <<'U'
@@ -21,6 +22,5 @@ U
 }
 case "${1:-}" in -h|--help) usage; exit 0 ;; esac
 [ $# -eq 0 ] || { echo "ten skrypt nie bierze argumentów — szczegóły węzła: show-node-connections.sh" >&2; echo >&2; usage >&2; exit 2; }
-podman container exists ros2 || { echo "brak kontenera ros2 — scripts/init/create-container-for-ros2.sh" >&2; exit 1; }
 
-exec distrobox enter ros2 -- bash -lc 'ros2 node list'
+run-in-ros2-container "ros2 node list"
