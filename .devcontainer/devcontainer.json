@@ -61,13 +61,5 @@
         "terminal.integrated.defaultProfile.linux": "bash"
       }
     }
-  },
-
-  // Wykonuje się raz, po utworzeniu kontenera.
-  //
-  // Sourcing idzie do /etc/profile.d/, a NIE do ~/.bashrc — bo .bashrc
-  // przerywa się na pierwszej linii dla powłok nieinteraktywnych, więc
-  // `podman exec ... bash -lc "ros2 ..."` z Fedory by go nie wykonał.
-  // /etc/profile.d/ czyta każda powłoka logowaniowa, także nieinteraktywna.
-  "postCreateCommand": ".devcontainer/post-create.sh"
+  }
 }
