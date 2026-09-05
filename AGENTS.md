@@ -65,7 +65,16 @@ odbijającym miejsce, w którym leżałby po stronie hosta:
 
 Nazwa katalogu zastępuje dawne `.internal/` i mówi więcej: nie „nie wołaj
 tego ręcznie", tylko konkretnie **„tego nie da się wywołać stąd, gdzie
-stoisz"**. Skrypty stamtąd sprawdzają to same — `install-ros2-in-container.sh`
+stoisz"**.
+
+**Te same nazwy po obu stronach granicy są celowe.** Para
+
+    scripts/init/install-ros2-in-container.sh                   ← wołasz to
+    scripts/inside-distrobox/init/install-ros2-in-container.sh   ← to robi robotę
+
+to jedna czynność widziana z dwóch stron: ta po stronie hosta tylko wchodzi
+i deleguje, ta w środku wykonuje. Gdyby nazwy się różniły, trzeba by pamiętać
+mapowanie; przy identycznych wystarczy pamiętać regułę o katalogu. Skrypty stamtąd sprawdzają to same — `install-ros2-in-container.sh`
 odmawia startu, gdy nie widzi `/run/.containerenv`. Bez tego uruchomiony
 na Fedorze próbowałby aptem zmienić hosta, a tego żaden revert by nie cofnął.
 
@@ -111,10 +120,16 @@ zobaczysz na ekranie**. Czasownik na początku jest częścią kontraktu:
 
 Dzięki temu z samej nazwy wiadomo, czy polecenie odda ci terminal, czy nie.
 
-Skrypt nie robi dwóch rzeczy naraz zależnie od liczby argumentów. Dawne
-`nodes.sh` bez argumentu listowało, a z argumentem pokazywało szczegóły —
-i żadna nazwa nie mogła tego uczciwie opisać. Stąd `list-running-nodes.sh`
-i `show-node-connections.sh` osobno.
+Skrypt nie robi dwóch rzeczy naraz. Dawne `nodes.sh` bez argumentu listowało,
+a z argumentem pokazywało szczegóły; dawne `create-container-for-ros2.sh`
+tworzyło kontener i od razu instalowało w nim ROS-a. W obu wypadkach żadna
+nazwa nie mogła tego uczciwie opisać, bo nazwa opisuje jedną rzecz. Stąd
+`list-running-nodes.sh` / `show-node-connections.sh` oraz
+`create-container-for-ros2.sh` / `install-ros2-in-container.sh` osobno.
+
+Zamiast łączyć kroki, **każdy skrypt kończy wypisaniem następnego** wraz ze
+ścieżką do niego. Kolejność mieszka w komunikatach, a nie w pamięci — i nie
+rozjeżdża się po zmianie nazw, bo widać ją przy pierwszym uruchomieniu.
 
 ## Granice
 
