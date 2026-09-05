@@ -46,8 +46,19 @@
       "extensions": [
         "ms-python.python",
         "ms-python.vscode-pylance",
-        "ms-iot.vscode-ros",
+
+        // Następca ms-iot.vscode-ros — Microsoft zarchiwizował swoje
+        // rozszerzenie, a utrzymuje je dalej ten sam autor pod szyldem
+        // Ranch Hand Robotics. Daje podgląd węzłów i tematów, podpowiedzi
+        // w plikach launch i integrację z rosdep.
+        // Jest też "rde-pack" — świadomie nie, to zestaw kilku rozszerzeń
+        // i dokłada zakładki, których na razie nie potrzebujesz.
+        "Ranch-Hand-Robotics.rde-ros-2",
+
+        // URDF i pliki launch to XML; przyda się przy tf2 i modelu robota.
         "redhat.vscode-xml",
+
+        // Na później: rclcpp i węzły w C++ (temat 08 w roadmapie).
         "ms-vscode.cpptools"
       ],
       "settings": {
