@@ -28,11 +28,16 @@ Reverty są idempotentne i mówią, czego nie ruszyły.
 
     ws/src/            pakiety ROS — wszystko, co MUSI być pakietem
     projects/<nazwa>/  notatki, analiza offline, dane danego projektu
-    scripts/init/      stawianie i rozbieranie środowiska (każdy z revertem)
-    scripts/ros2/      oglądanie żywego systemu (bez skutków ubocznych)
+    scripts/init/           stawianie i rozbieranie środowiska (każdy z revertem)
+    scripts/init/.internal/ wołane przez inne skrypty, nie z ręki
+    scripts/ros2/           oglądanie żywego systemu (bez skutków ubocznych)
 
 Podział `scripts/` jest jednocześnie deklaracją: co leży w `init/`, zmienia
 maszynę i musi mieć bliźniaka `-revert.sh`; co leży w `ros2/`, tylko czyta.
+
+Nazwa skryptu nazywa rzecz, którą tworzy, a nie samą czynność — i mówi,
+gdzie ta rzecz powstaje (`-in-container`, `-for-ros2`). Skrypt, którego
+nie uruchamia człowiek, idzie do `init/.internal/`.
 
 Jeden colcon workspace na całe repo. Kolejny projekt to kolejny pakiet
 w `ws/src/` plus katalog w `projects/`, nie nowe repo.
