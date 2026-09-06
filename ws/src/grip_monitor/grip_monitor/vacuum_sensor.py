@@ -9,7 +9,7 @@ from std_msgs.msg import Float32
 class VacuumSensor(Node):
     def __init__(self):
         super().__init__('vacuum_sensor')
-        self.declare_parameter('state', 'empty')
+        self.declare_parameter('state', 'open')
         qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
         self.pub = self.create_publisher(Float32, 'vacuum_pressure', qos)
         self.create_timer(1.0 / 50, self._tick)
@@ -26,7 +26,7 @@ class VacuumSensor(Node):
     def _get_state_value(self) -> float:
         state = self.get_parameter('state').value
 
-        if state == 'empty':
+        if state == 'open':
             return 0.0
         if state == 'sealed':
             return -59.0
