@@ -3,17 +3,19 @@ from collections import deque
 import numpy as np
 from rclpy import init, shutdown, spin
 from rclpy.node import Node
-from std_msgs.msg import Float32, String
 from rclpy.qos import QoSProfile, ReliabilityPolicy
+from std_msgs.msg import Float32, String
 
 
 class GraspMonitor(Node):
     def __init__(self):
         super().__init__('grasp_monitor')
 
-        self.create_subscription(Float32, 'vacuum_pressure', self.on_measurement, 10)
         qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
-        self.pub = self.create_publisher(String, 'grasp_verdict', qos)
+
+        self.create_subscription(Float32, 'vacuum_pressure', self.on_measurement, qos)
+
+        self.pub = self.create_publisher(String, 'grasp_verdict', 10)
         self.frame = deque(maxlen=25)
         self.last_state = 'none'
 
@@ -26,24 +28,24 @@ class GraspMonitor(Node):
 
         mean = np.mean(self.frame)
 
-        if self.last_state != 'empty':
-            if is_at_level(mean, 0):
-                self.publish_state_change('empty')
-                self.last_state = 'empty'
+        # if self.last_state != 'empty':
+        if is_at_level(mean, 0):
+            self.publish_state_change('open')
+        # self.last_state = 'empty'
 
-        if self.last_state != 'leak':
-            if mean < -1 and mean > -58:
-                self.publish_state_change('leak')
-                self.last_state = 'leak'
+        # if self.last_state != 'leak':
+        if mean < -1 and mean > -58:
+            self.publish_state_change('leak')
+            # self.last_state = 'leak'
 
-        if self.last_state != 'sealed':
-            if is_at_level(mean, -59):
-                self.publish_state_change('sealed')
-                self.last_state = 'sealed'
+        # if self.last_state != 'sealed':
+        if is_at_level(mean, -59):
+            self.publish_state_change('sealed')
+            # self.last_state = 'sealed'
 
     def publish_state_change(self, msg: str):
         str_msg = String()
-        str_msg.data = '[state changed] ' + msg
+        str_msg.data = '[state] ' + msg
         self.pub.publish(str_msg)
 
 
