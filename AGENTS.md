@@ -17,37 +17,64 @@ Reverty są idempotentne i mówią, czego nie ruszyły.
 
 ## Skąd się uruchamia
 
-**Każdy skrypt w tym repo odpala się z Fedory, z twojego terminala.**
+**Każdy skrypt pracujący z ROS-em działa i z Fedory, i z wnętrza kontenera.**
 
-Nie ma kroku „najpierw wejdź do kontenera". Skrypt, który potrzebuje ROS-a,
-sam robi `distrobox enter ros2 -- …` w środku i sam wychodzi. Ty zawsze
-stoisz w tym samym miejscu.
+Wcześniej obowiązywała reguła „wyłącznie z Fedory", a skrypty uruchomione
+w środku odmawiały startu. Powód był techniczny: opakowanie użyte w kontenerze
+próbowałoby wejść do kontenera z kontenera. To było ograniczenie helpera,
+nie właściwość problemu.
 
-Konsekwencja jest taka, że **nie ma czegoś takiego jak zły terminal**. Nie
-musisz pamiętać, gdzie jesteś, ani czy dana sesja miała zrobiony `source`.
-Skrypt albo działa, albo mówi, czego brakuje — nigdy nie robi czegoś innego
-dlatego, że uruchomiłeś go z innego miejsca.
+Dziś `run-in-devcontainer` **pyta, gdzie stoi**, i wybiera drogę:
 
-`scripts/dev/enter-devcontainer.sh` nie jest wyjątkiem, tylko jedynym
-skryptem, którego *celem* jest zostawić cię w środku. Reszta wchodzi
-i wychodzi niezauważalnie.
+    z Fedory     ->  podman exec do kontenera
+    z kontenera  ->  wprost, bo już jesteśmy na miejscu
+
+Obie drogi kończą się na `bash -lc`, czyli na powłoce logowania czytającej
+`/etc/profile.d/ros2.sh`. To nie są dwa podobne wywołania, tylko jedno
+polecenie w dwóch miejscach — dlatego wynik jest identyczny po obu stronach
+(sprawdzone: `list-topics.sh` daje ten sam wydruk stąd i stamtąd).
+
+Rozgałęzienie stoi **w jednym miejscu**. Dziewięć skryptów w `dev/` dostaje
+pracę po obu stronach za darmo i żaden z nich nie wie, że granica istnieje.
+Warunkiem jest to, że repo jest zamontowane pod tą samą ścieżką co na
+Fedorze — dzięki temu `REPO_PATH` policzony ze ścieżki skryptu jest
+prawdziwy w obu światach i nie ma czego tłumaczyć.
+
+Konsekwencja jest ta sama co przedtem, ale teraz dosłowna: **nie ma czegoś
+takiego jak zły terminal.** Wcześniej nie było, bo skrypt odmawiał. Teraz
+nie ma, bo skrypt działa.
+
+### Wyjątek: skrypty o kontenerze
+
+Skrypt, który **dotyczy kontenera z zewnątrz** — stawia go, usuwa, zatrzymuje,
+pyta podmana o stan — w środku nie ma czego zrobić, bo tam nie ma ani podmana,
+ani `devcontainer` CLI. Takie skrypty wołają `require-fedora-host` i odmawiają,
+mówiąc dlaczego. To jest `fedora/`, `container/` i `dev/enter-devcontainer.sh`
+(do kontenera wchodzi się tylko z zewnątrz — w środku nie ma dokąd).
+
+Reguła w obie strony: **`require-fedora-host` woła się wtedy i tylko wtedy,
+gdy skrypt mówi o kontenerze. Skrypt mówiący o ROS-ie nie woła go nigdy.**
 
 ### `scripts/lib/`
 
-Skoro każdy skrypt sam wchodzi do kontenera, to wejście powtarzało się
+Skoro każdy skrypt sam trafia do kontenera, to wejście powtarzało się
 w dziewięciu plikach, a nazwa kontenera stała na sztywno w ośmiu. Wspólna
 część siedzi w `scripts/lib/container.sh` — **bibliotece, nie poleceniu**:
 `source`ują ją inne skrypty, a uruchomiona wprost odmawia i mówi dlaczego.
 
-    require-distrobox-installed        przerywa, gdy nie ma distroboxa
+    inside-devcontainer              czy jesteśmy w środku (tylko pyta)
+    require-fedora-host              przerywa, gdy jesteś W kontenerze
+    require-devcontainer-cli         przerywa, gdy nie ma `devcontainer`
     require-devcontainer             przerywa, gdy nie ma kontenera
-    run-in-devcontainer "POLECENIE"  wykonaj w kontenerze
+    run-in-devcontainer "POLECENIE"  wykonaj tam, gdzie trzeba
     enter-devcontainer               zostań w kontenerze
 
-Nazwy mówią `ros2-container`, a nie `distrobox`, bo distrobox jest szczegółem
-implementacji — gdyby kiedyś zamienić go na gołe `podman exec`, te nazwy
-zostaną prawdziwe. Nazwa `require-distrobox-installed` jest wyjątkiem
-świadomym: ona dotyczy właśnie narzędzia, nie kontenera.
+`inside-devcontainer` jest osobno, choć ma jedną linijkę, bo **pytanie
+i decyzja to dwie różne rzeczy**: `require-fedora-host` odmawia,
+`run-in-devcontainer` wybiera drogę, a obie potrzebują tej samej odpowiedzi.
+Nazwa kontenera i nazwa jego użytkownika muszą zgadzać się z
+`.devcontainer/devcontainer.json` — to jedyne miejsce w repo, gdzie te dwa
+światy się spotykają.
 
 Różnica między dwiema funkcjami wchodzącymi jest celowa. `run-in-devcontainer`
 **nie** używa `exec` — wykonuje polecenie i wraca, więc skrypt może po nim
@@ -57,37 +84,21 @@ daje 42 na Fedorze), więc podpowiedź „Dalej" nie pojawi się po niepowodzeni
 `enter-devcontainer` używa `exec`, bo to przekazanie powłoki, a nie
 wywołanie polecenia — nic po nim nie ma się wykonać.
 
-Pierwsza wersja helpera miała `exec` w obu i przez to **dwa skrypty musiały
-go omijać**, wołając `distrobox enter` wprost. To był objaw ograniczenia
-helpera, nie właściwość problemu. Reguła: gdy skrypt omija wspólny kod,
-najpierw sprawdź, czy to nie wspólny kod jest za wąski.
+**Ta sama nauczka wyszła tu dwa razy.** Pierwsza wersja helpera miała `exec`
+w obu funkcjach i przez to dwa skrypty musiały go omijać, wołając wejście
+wprost. Druga odmawiała pracy w kontenerze i przez to połowa repo była
+bezużyteczna z edytora. Za każdym razem objaw wyglądał jak „taki już jest
+ten problem", a był ograniczeniem wspólnego kodu. Reguła: **gdy skrypt omija
+wspólny kod albo odmawia bez powodu fizycznego, najpierw sprawdź, czy to nie
+wspólny kod jest za wąski.**
 
-### `scripts/inside-distrobox/`
+### Dawne `scripts/inside-distrobox/`
 
-Wyjątek jest jeden i ma własne drzewo. Skrypt, który **musi** wykonać się
-wewnątrz kontenera, leży w `scripts/inside-distrobox/` — w podkatalogu
-odbijającym miejsce, w którym leżałby po stronie hosta:
-
-    scripts/container/create-container-for-ros2.sh          ← wołasz to z Fedory
-    scripts/inside-distrobox/container/install-ros2-in-container.sh   ← wykonuje się w środku
-
-Nazwa katalogu zastępuje dawne `.internal/` i mówi więcej: nie „nie wołaj
-tego ręcznie", tylko konkretnie **„tego nie da się wywołać stąd, gdzie
-stoisz"**.
-
-**Te same nazwy po obu stronach granicy są celowe.** Para
-
-    scripts/container/install-ros2-in-container.sh                   ← wołasz to
-    scripts/inside-distrobox/container/install-ros2-in-container.sh   ← to robi robotę
-
-to jedna czynność widziana z dwóch stron: ta po stronie hosta tylko wchodzi
-i deleguje, ta w środku wykonuje. Gdyby nazwy się różniły, trzeba by pamiętać
-mapowanie; przy identycznych wystarczy pamiętać regułę o katalogu. Skrypty stamtąd sprawdzają to same — `install-ros2-in-container.sh`
-odmawia startu, gdy nie widzi `/run/.containerenv`. Bez tego uruchomiony
-na Fedorze próbowałby aptem zmienić hosta, a tego żaden revert by nie cofnął.
-
-Reguła w obie strony: skrypt wymagający kontenera **musi** leżeć pod
-`inside-distrobox/`, i żaden inny skrypt tam leżeć nie może.
+Katalog zniknął przy przejściu z distroboxa na devcontainer i nie wróci.
+Trzymał skrypty, które **musiały** wykonać się w środku — głównie instalację
+ROS-a w świeżym kontenerze. Dziś to robi `.devcontainer/Containerfile` przy
+budowie obrazu, czyli deklaratywnie i raz, zamiast skryptem po fakcie. Reszta
+skryptów nie potrzebuje osobnego drzewa, bo działa po obu stronach.
 
 ## Nazewnictwo skryptów
 
@@ -167,7 +178,6 @@ rozjeżdża się po zmianie nazw, bo widać ją przy pierwszym uruchomieniu.
 
     scripts/fedora/             twoja Fedora — jedyne, co dotyka systemu
     scripts/container/          cykl życia kontenera: powstaje, chodzi, stoi, znika
-    scripts/inside-distrobox/   kod wykonywany W ŚRODKU, nie z Fedory
     scripts/lib/                wspólny kod — source'owany, nie uruchamiany
 
     scripts/dev/                CODZIENNA PRACA

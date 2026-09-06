@@ -94,7 +94,24 @@
             ]
           }
         },
-        "terminal.integrated.defaultProfile.linux": "bash"
+        "terminal.integrated.defaultProfile.linux": "bash",
+        // Ctrl+S sam porządkuje importy — to jest lek na ruffowe I001
+        // („Import block is un-sorted or un-formatted"). Sam formatter tego
+        // NIE robi: `ruff format` układa kod, ale kolejności importów nie
+        // rusza, więc formatOnSave zostawiał ostrzeżenie na ekranie.
+        //
+        // "explicit" znaczy: tylko przy zapisie Z RĘKI. Autozapis i zapis
+        // przy zamykaniu okna tego nie odpalą — inaczej importy przestawiałyby
+        // się w trakcie pisania, gdy plik jest w połowie zmiany.
+        //
+        // Akcja jest zawężona do ruffa (końcówka .ruff), bo organizeImports
+        // ogłasza też Pylance. Przy dwóch dostawcach tej samej akcji VS Code
+        // nie zgaduje, którego wywołać, tylko nie robi nic.
+        "[python]": {
+          "editor.codeActionsOnSave": {
+            "source.organizeImports.ruff": "explicit"
+          }
+        }
       }
     }
   }

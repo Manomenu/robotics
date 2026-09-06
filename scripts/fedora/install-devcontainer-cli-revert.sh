@@ -2,7 +2,7 @@
 # HOST. Cofa install-devcontainer-cli.sh.
 set -euo pipefail
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"
-refuse-inside-container
+require-fedora-host
 
 if podman container exists "$CONTAINER" 2>/dev/null; then
   echo "Kontener $CONTAINER wciąż istnieje — najpierw create-devcontainer-revert.sh" >&2

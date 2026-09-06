@@ -7,7 +7,7 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/../lib/container.sh"
-refuse-inside-container
+require-fedora-host
 
 podman rm --force "$CONTAINER" >/dev/null 2>&1 && echo "-> kontener usunięty" || echo "-> kontenera nie było"
 
