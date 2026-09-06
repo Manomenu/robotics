@@ -2,6 +2,7 @@ from random import gauss
 
 from rclpy import init, shutdown, spin
 from rclpy.node import Node
+from rclpy.qos import QoSProfile, ReliabilityPolicy
 from std_msgs.msg import Float32
 
 
@@ -9,8 +10,9 @@ class VacuumSensor(Node):
     def __init__(self):
         super().__init__('vacuum_sensor')
         self.declare_parameter('state', 'empty')
-        self.pub = self.create_publisher(Float32, 'vacuum_pressure', 10)
-        self.create_timer(1.0 / 2, self._tick)
+        qos = QoSProfile(depth=10, reliability=ReliabilityPolicy.BEST_EFFORT)
+        self.pub = self.create_publisher(Float32, 'vacuum_pressure', qos)
+        self.create_timer(1.0 / 50, self._tick)
 
     def _tick(self):
         noise = gauss(0, 0.5)

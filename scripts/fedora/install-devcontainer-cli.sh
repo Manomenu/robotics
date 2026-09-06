@@ -7,7 +7,7 @@
 # Cofa: install-devcontainer-cli-revert.sh
 set -euo pipefail
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/container.sh"
-refuse-inside-container
+require-fedora-host
 
 command -v npm >/dev/null 2>&1 || { echo "brak npm (nvm) — zainstaluj node zanim pójdziesz dalej" >&2; exit 1; }
 

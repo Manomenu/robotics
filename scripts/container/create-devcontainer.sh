@@ -8,7 +8,7 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/../lib/container.sh"
-refuse-inside-container
+require-fedora-host
 require-devcontainer-cli
 
 REPO="$(cd "$HERE/../.." && pwd)"

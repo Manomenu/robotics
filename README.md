@@ -30,14 +30,20 @@ To jest najważniejsza rzecz do zrozumienia w tym repo.
 
 | gdzie | co tam robisz | jak wołasz ROS-a |
 |---|---|---|
-| **VS Code** (w kontenerze) | piszesz kod, uruchamiasz węzły, debugujesz | wprost: `ros2 run …`, `colcon build` |
+| **VS Code** (w kontenerze) | piszesz kod, uruchamiasz węzły, debugujesz | wprost albo przez `scripts/` |
 | **Ghostty** (Fedora) | zaglądasz, co robi system; sprzątasz; stawiasz środowisko | przez `scripts/` |
 
-**Skrypty z `scripts/` odpala się wyłącznie z Fedory.** Uruchomione w kontenerze
-odmawiają i mówią, żeby użyć gołej komendy — bo tam opakowanie nie ma sensu.
+**Skrypty z `dev/` działają z obu miejsc i dają ten sam wynik.** Same sprawdzają,
+gdzie stoisz: z Fedory wchodzą do kontenera, w kontenerze wykonują się wprost.
+Nie musisz pamiętać, w którym oknie jesteś.
 
-Powód takiego podziału: gdy w VS Code masz uruchomiony węzeł, nie chcesz go
-przerywać, żeby sprawdzić, co publikuje. Otwierasz Ghostty i pytasz stamtąd.
+Wyjątkiem są skrypty **o kontenerze** (`fedora/`, `container/`, `enter-devcontainer.sh`).
+Te odmawiają w środku i mówią dlaczego — nie z konwencji, tylko dlatego, że
+w kontenerze nie ma podmana ani `devcontainer` CLI.
+
+Powód, dla którego mimo wszystko warto mieć drugie okno: gdy w VS Code masz
+uruchomiony węzeł, nie chcesz go przerywać, żeby sprawdzić, co publikuje.
+Otwierasz Ghostty i pytasz stamtąd.
 
 ---
 
@@ -89,7 +95,8 @@ w działającym kontenerze — inaczej zginie przy następnym odtworzeniu.
 
 ## Skrypty
 
-Wszystkie mają `-h` z opisem parametrów. Wszystkie odpalasz z Fedory.
+Wszystkie mają `-h` z opisem parametrów. `dev/` odpalasz skąd chcesz,
+resztę z Fedory.
 
 ### `scripts/fedora/` — twój system, raz w życiu maszyny
 
@@ -176,7 +183,8 @@ są sprzęgnięte ręcznie.
 | `package not found` tuż po buildzie | terminal starszy niż `ws/install/` | otwórz nowy terminal |
 | węzły żyją, a się nie widzą | zwykle niedopasowane QoS | `show-topic-connections.sh TOPIC`, porównaj obie strony |
 | pliki w `ws/build` mają złego właściciela | brak `--userns=keep-id` | sprawdź `runArgs` w `devcontainer.json` |
-| skrypt mówi „jesteś wewnątrz kontenera" | odpalasz go z VS Code | użyj gołej komendy `ros2 …` |
+| skrypt mówi „działa tylko z Fedory" | to skrypt o kontenerze, a jesteś w kontenerze | otwórz Ghostty |
+| importy nie porządkują się przy Ctrl+S | ustawienie doszło po starcie kontenera | F1 → Developer: Reload Window |
 
 ---
 
